@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-
+const { getMaterialsByFilter } = require('../controllers/materialController');
 const { 
     createDrive, 
     getAllDrivesFaculty, 
@@ -16,7 +16,7 @@ router.post('/', protectFaculty, createDrive);
 router.get('/faculty', protectFaculty, getAllDrivesFaculty);
 router.put('/:id', protectFaculty, updateDrive);
 router.delete('/:id', protectFaculty, deleteDrive);
-
+router.get('/materials/filter', protectStudent, getMaterialsByFilter);
 // Student routes
 router.get('/student', protectStudent, getActiveDrivesStudent);
 
