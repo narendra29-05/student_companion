@@ -4,6 +4,7 @@ const Faculty = require('./Faculty');
 const { Material, MaterialUnit } = require('./Material');
 const Todo = require('./Todo');
 const { Drive, DriveEligibleDepartment } = require('./Drive');
+const DriveApplication = require('./DriveApplication');
 
 // Student associations
 Student.hasMany(Todo, { foreignKey: 'studentId', as: 'todos' });
@@ -15,6 +16,13 @@ Drive.belongsTo(Faculty, { foreignKey: 'postedBy', as: 'faculty' });
 
 Faculty.hasMany(Material, { foreignKey: 'uploadedBy', as: 'materials' });
 Material.belongsTo(Faculty, { foreignKey: 'uploadedBy', as: 'uploadedByFaculty' });
+
+// DriveApplication associations
+Student.hasMany(DriveApplication, { foreignKey: 'studentId', as: 'driveApplications' });
+DriveApplication.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
+
+Drive.hasMany(DriveApplication, { foreignKey: 'driveId', as: 'applications' });
+DriveApplication.belongsTo(Drive, { foreignKey: 'driveId', as: 'drive' });
 
 // Sync all models with database
 const syncDB = async () => {
@@ -37,4 +45,5 @@ module.exports = {
     Todo,
     Drive,
     DriveEligibleDepartment,
+    DriveApplication,
 };

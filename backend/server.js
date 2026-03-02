@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const dotenv = require('dotenv');
 const rateLimit = require('express-rate-limit');
 const { connectDB } = require('./config/db');
@@ -26,9 +27,13 @@ const authLimiter = rateLimit({
     message: { success: false, message: 'Too many attempts, please try again after 15 minutes' },
 });
 
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // --- ROUTES ---
 app.use('/api/auth', authLimiter, require('./routes/authRoutes'));
 app.use('/api/drives', require('./routes/driveRoutes'));
+app.use('/api/student', require('./routes/studentRoutes'));
 app.use('/api/todos', require('./routes/todoRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 

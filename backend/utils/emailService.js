@@ -230,9 +230,12 @@ const detectChanges = (oldDrive, newData) => {
 const notifyNewDrive = async (drive, departments) => {
     try {
         const where = {};
-        if (departments && departments.length > 0) {
+        // If departments list is non-empty and doesn't include 'ALL', filter by department
+        const hasAll = departments && departments.includes('ALL');
+        if (departments && departments.length > 0 && !hasAll) {
             where.department = departments;
         }
+        // If 'ALL' or empty list → no department filter, sends to everyone
 
         const students = await Student.findAll({ where });
         if (students.length === 0) return;
@@ -257,7 +260,8 @@ const notifyDriveUpdate = async (drive, departments, changes) => {
         if (changes.length === 0) return; // no actual changes, skip
 
         const where = {};
-        if (departments && departments.length > 0) {
+        const hasAll = departments && departments.includes('ALL');
+        if (departments && departments.length > 0 && !hasAll) {
             where.department = departments;
         }
 
@@ -306,8 +310,9 @@ const startDeadlineReminderCron = () => {
 
             for (const drive of drives) {
                 const departments = drive.eligibleDepartments.map((ed) => ed.department);
+                const hasAll = departments.includes('ALL');
                 const where = {};
-                if (departments.length > 0) {
+                if (departments.length > 0 && !hasAll) {
                     where.department = departments;
                 }
 

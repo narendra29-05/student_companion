@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import StudentDashboard from './pages/StudentDashboard';
+import StudentProfile from './pages/StudentProfile';
 import FacultyDashboard from './pages/FacultyDashboard';
 import ResourcePage from './pages/ResourcePage';
 import Materials from './pages/Materials';
@@ -38,6 +39,14 @@ function AppContent() {
                 <Route path="/register" element={<Register />} />
 
                 {/* Student Routes */}
+                <Route
+                    path="/student/profile"
+                    element={
+                        <ProtectedRoute allowedRole="student">
+                            <StudentProfile />
+                        </ProtectedRoute>
+                    }
+                />
                 <Route
                     path="/student/dashboard"
                     element={

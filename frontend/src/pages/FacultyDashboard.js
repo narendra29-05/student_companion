@@ -25,6 +25,7 @@ const FacultyDashboard = () => {
         description: '',
         eligibleDepartments: [],
         minCGPA: '',
+        maxBacklogs: 0,
         package: '',
         expiryDate: ''
     });
@@ -56,6 +57,7 @@ const FacultyDashboard = () => {
                 description: drive.description || '',
                 eligibleDepartments: (drive.eligibleDepartments || []).map(d => d.department || d),
                 minCGPA: drive.minCGPA || '',
+                maxBacklogs: drive.maxBacklogs || 0,
                 package: drive.package || '',
                 expiryDate: drive.expiryDate.split('T')[0]
             });
@@ -69,6 +71,7 @@ const FacultyDashboard = () => {
                 description: '',
                 eligibleDepartments: [],
                 minCGPA: '',
+                maxBacklogs: 0,
                 package: '',
                 expiryDate: ''
             });
@@ -257,6 +260,15 @@ const FacultyDashboard = () => {
                         inputProps={{ step: 0.1, min: 0, max: 10 }}
                         value={formData.minCGPA}
                         onChange={(e) => setFormData({ ...formData, minCGPA: e.target.value })}
+                    />
+                    <TextField
+                        fullWidth
+                        label="Max Allowed Backlogs"
+                        type="number"
+                        margin="normal"
+                        inputProps={{ min: 0 }}
+                        value={formData.maxBacklogs}
+                        onChange={(e) => setFormData({ ...formData, maxBacklogs: parseInt(e.target.value, 10) || 0 })}
                     />
                     <TextField
                         fullWidth

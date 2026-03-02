@@ -46,6 +46,10 @@ const Drive = sequelize.define('Drive', {
             key: 'id',
         },
     },
+    maxBacklogs: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+    },
     isActive: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,

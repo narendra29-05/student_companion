@@ -23,11 +23,6 @@ const Student = sequelize.define('Student', {
         unique: true,
         validate: {
             isEmail: true,
-            isCollegeEmail(value) {
-                if (!/^[\w.-]+@[\w-]+\.(edu|ac\.in|edu\.in)$/i.test(value)) {
-                    throw new Error('Please use a valid college email');
-                }
-            },
         },
         set(val) {
             this.setDataValue('collegeEmail', val.toLowerCase().trim());
@@ -65,6 +60,38 @@ const Student = sequelize.define('Student', {
     section: {
         type: DataTypes.STRING(5),
         allowNull: true,
+    },
+    firstName: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+    },
+    lastName: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+    },
+    cgpa: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        validate: {
+            min: 0,
+            max: 10,
+        },
+    },
+    backlogs: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+    },
+    resumePath: {
+        type: DataTypes.STRING(500),
+        allowNull: true,
+    },
+    profilePicPath: {
+        type: DataTypes.STRING(500),
+        allowNull: true,
+    },
+    profileCompleted: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
     },
 }, {
     tableName: 'students',

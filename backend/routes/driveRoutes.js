@@ -6,6 +6,8 @@ const {
     getActiveDrivesStudent,
     updateDrive,
     deleteDrive,
+    applyToDrive,
+    updateApplicationStatus,
 } = require('../controllers/driveController');
 const { getMaterialsByFilter } = require('../controllers/materialController');
 const { protectFaculty, protectStudent } = require('../middleware/authMiddleware');
@@ -18,6 +20,8 @@ router.delete('/:id', protectFaculty, deleteDrive);
 
 // Student routes
 router.get('/student', protectStudent, getActiveDrivesStudent);
+router.post('/apply/:driveId', protectStudent, applyToDrive);
+router.patch('/apply/:driveId', protectStudent, updateApplicationStatus);
 router.get('/materials/filter', protectStudent, getMaterialsByFilter);
 
 module.exports = router;

@@ -23,11 +23,6 @@ const Faculty = sequelize.define('Faculty', {
         unique: true,
         validate: {
             isEmail: true,
-            isCollegeEmail(value) {
-                if (!/^[\w.-]+@[\w-]+\.(edu|ac\.in|edu\.in)$/i.test(value)) {
-                    throw new Error('Please use a valid college email');
-                }
-            },
         },
         set(val) {
             this.setDataValue('collegeEmail', val.toLowerCase().trim());

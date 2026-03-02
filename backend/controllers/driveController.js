@@ -1,13 +1,15 @@
 const { Op } = require('sequelize');
 const { Drive, DriveEligibleDepartment } = require('../models/Drive');
 const Faculty = require('../models/Faculty');
+const Student = require('../models/Student');
+const DriveApplication = require('../models/DriveApplication');
 const { notifyNewDrive, notifyDriveUpdate, detectChanges } = require('../utils/emailService');
 
 // @desc    Create new drive (Faculty only)
 // @route   POST /api/drives
 exports.createDrive = async (req, res, next) => {
     try {
-        const { companyName, role, driveLink, description, eligibleDepartments, minCGPA, package: salary, expiryDate } = req.body;
+        const { companyName, role, driveLink, description, eligibleDepartments, minCGPA, maxBacklogs, package: salary, expiryDate } = req.body;
 
         if (!companyName || !role || !driveLink || !expiryDate) {
             return res.status(400).json({ success: false, message: 'Company name, role, drive link, and expiry date are required' });
@@ -19,6 +21,7 @@ exports.createDrive = async (req, res, next) => {
             driveLink,
             description,
             minCGPA,
+            maxBacklogs: maxBacklogs || 0,
             package: salary,
             expiryDate,
             postedBy: req.faculty.id,
@@ -68,11 +71,12 @@ exports.getAllDrivesFaculty = async (req, res, next) => {
     }
 };
 
-// @desc    Get active drives for students (filtered by student's department)
+// @desc    Get active drives for students (filtered by student's department) with eligibility
 // @route   GET /api/drives/student
 exports.getActiveDrivesStudent = async (req, res, next) => {
     try {
-        const studentDept = req.student.department;
+        const student = await Student.findByPk(req.student.id);
+        const studentDept = student.department;
 
         const drives = await Drive.findAll({
             where: {
@@ -101,7 +105,120 @@ exports.getActiveDrivesStudent = async (req, res, next) => {
                 d.eligibleDepartments.some((ed) => ed.department === studentDept);
         });
 
-        res.status(200).json({ success: true, count: filtered.length, drives: filtered });
+        // Fetch student's applications
+        const applications = await DriveApplication.findAll({
+            where: { studentId: student.id },
+        });
+        const appMap = {};
+        applications.forEach((app) => {
+            appMap[app.driveId] = app.status;
+        });
+
+        // Enrich drives with eligibility and application status
+        const enriched = filtered.map((d) => {
+            const drive = d.toJSON();
+            const eligibilityReasons = [];
+
+            if (student.cgpa !== null && drive.minCGPA && student.cgpa < drive.minCGPA) {
+                eligibilityReasons.push(`CGPA ${student.cgpa} is below minimum ${drive.minCGPA}`);
+            }
+            if (student.backlogs > (drive.maxBacklogs || 0)) {
+                eligibilityReasons.push(`${student.backlogs} backlogs exceeds max allowed ${drive.maxBacklogs || 0}`);
+            }
+
+            drive.isEligible = eligibilityReasons.length === 0;
+            drive.eligibilityReasons = eligibilityReasons;
+            drive.applicationStatus = appMap[drive.id] || null;
+            return drive;
+        });
+
+        res.status(200).json({ success: true, count: enriched.length, drives: enriched });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Apply to a drive
+// @route   POST /api/drives/apply/:driveId
+exports.applyToDrive = async (req, res, next) => {
+    try {
+        const student = await Student.findByPk(req.student.id);
+        const drive = await Drive.findByPk(req.params.driveId);
+
+        if (!drive) {
+            return res.status(404).json({ success: false, message: 'Drive not found' });
+        }
+
+        if (!student.profileCompleted) {
+            return res.status(400).json({ success: false, message: 'Please complete your profile before applying' });
+        }
+
+        // Check eligibility
+        const reasons = [];
+        if (student.cgpa !== null && drive.minCGPA && student.cgpa < drive.minCGPA) {
+            reasons.push(`CGPA ${student.cgpa} is below minimum ${drive.minCGPA}`);
+        }
+        if (student.backlogs > (drive.maxBacklogs || 0)) {
+            reasons.push(`${student.backlogs} backlogs exceeds max allowed ${drive.maxBacklogs || 0}`);
+        }
+        if (reasons.length > 0) {
+            return res.status(400).json({ success: false, message: 'Not eligible', reasons });
+        }
+
+        // Create or update application
+        const [application, created] = await DriveApplication.findOrCreate({
+            where: { studentId: student.id, driveId: drive.id },
+            defaults: { status: 'interested' },
+        });
+
+        res.status(created ? 201 : 200).json({
+            success: true,
+            message: created ? 'Application recorded' : 'Already applied',
+            application,
+            studentProfile: {
+                name: student.firstName && student.lastName
+                    ? `${student.firstName} ${student.lastName}`
+                    : student.name,
+                rollNumber: student.rollNumber,
+                email: student.collegeEmail,
+                department: student.department,
+                year: student.year,
+                cgpa: student.cgpa,
+                backlogs: student.backlogs,
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Update application status
+// @route   PATCH /api/drives/apply/:driveId
+exports.updateApplicationStatus = async (req, res, next) => {
+    try {
+        const { status } = req.body;
+
+        if (!['interested', 'applied'].includes(status)) {
+            return res.status(400).json({ success: false, message: 'Invalid status' });
+        }
+
+        const application = await DriveApplication.findOne({
+            where: { studentId: req.student.id, driveId: req.params.driveId },
+        });
+
+        if (!application) {
+            // Create application if it doesn't exist
+            const newApp = await DriveApplication.create({
+                studentId: req.student.id,
+                driveId: req.params.driveId,
+                status,
+            });
+            return res.status(201).json({ success: true, application: newApp });
+        }
+
+        await application.update({ status });
+
+        res.status(200).json({ success: true, application });
     } catch (error) {
         next(error);
     }
@@ -121,7 +238,7 @@ exports.updateDrive = async (req, res, next) => {
             return res.status(403).json({ success: false, message: 'Not authorized to update this drive' });
         }
 
-        const { companyName, role, driveLink, description, eligibleDepartments, minCGPA, package: salary, expiryDate, isActive } = req.body;
+        const { companyName, role, driveLink, description, eligibleDepartments, minCGPA, maxBacklogs, package: salary, expiryDate, isActive } = req.body;
 
         // Snapshot old values before updating
         const oldValues = {
@@ -141,6 +258,7 @@ exports.updateDrive = async (req, res, next) => {
             driveLink: driveLink || drive.driveLink,
             description: description !== undefined ? description : drive.description,
             minCGPA: minCGPA !== undefined ? minCGPA : drive.minCGPA,
+            maxBacklogs: maxBacklogs !== undefined ? maxBacklogs : drive.maxBacklogs,
             package: salary !== undefined ? salary : drive.package,
             expiryDate: expiryDate || drive.expiryDate,
             isActive: isActive !== undefined ? isActive : drive.isActive,
