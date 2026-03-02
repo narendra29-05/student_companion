@@ -1,172 +1,205 @@
 const jwt = require('jsonwebtoken');
 const Student = require('../models/Student');
 const Faculty = require('../models/Faculty');
+const { sendWelcomeEmail } = require('../utils/emailService');
 
-// Generate JWT Token
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRE
+        expiresIn: process.env.JWT_EXPIRE || '7d',
     });
 };
 
 // ==================== STUDENT AUTH ====================
 
-exports.registerStudent = async (req, res, next) => { // Added next
+exports.registerStudent = async (req, res, next) => {
     try {
-        const { rollNumber, collegeEmail, password, name, department, year } = req.body;
+        const { rollNumber, collegeEmail, password, name, department, year, section } = req.body;
 
-        const studentExists = await Student.findOne({ 
-            $or: [{ rollNumber }, { collegeEmail }] 
+        if (!rollNumber || !collegeEmail || !password || !name || !department || !year) {
+            return res.status(400).json({ success: false, message: 'All fields are required' });
+        }
+
+        const existingStudent = await Student.scope('withPassword').findOne({
+            where: { rollNumber: rollNumber.toUpperCase() },
         });
 
-        if (studentExists) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Student already exists with this roll number or email' 
+        if (existingStudent) {
+            return res.status(400).json({
+                success: false,
+                message: 'Student already exists with this roll number',
+            });
+        }
+
+        const emailExists = await Student.findOne({ where: { collegeEmail: collegeEmail.toLowerCase() } });
+        if (emailExists) {
+            return res.status(400).json({
+                success: false,
+                message: 'Student already exists with this email',
             });
         }
 
         const student = await Student.create({
-            rollNumber, collegeEmail, password, name, department, year
+            rollNumber, collegeEmail, password, name, department, year, section,
         });
 
-        const token = generateToken(student._id);
+        const token = generateToken(student.id);
 
         res.status(201).json({
             success: true,
             message: 'Registration successful!',
             token,
             user: {
-                id: student._id,
+                id: student.id,
                 rollNumber: student.rollNumber,
                 name: student.name,
                 email: student.collegeEmail,
                 department: student.department,
                 year: student.year,
-                role: 'student'
-            }
+                section: student.section,
+                role: 'student',
+            },
         });
+
+        // Fire-and-forget welcome email
+        sendWelcomeEmail(student);
     } catch (error) {
-        next(error); // Pass to global error handler
+        next(error);
     }
 };
 
-exports.loginStudent = async (req, res, next) => { // Added next
+exports.loginStudent = async (req, res, next) => {
     try {
         const { rollNumber, password } = req.body;
 
         if (!rollNumber || !password) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Please provide roll number and password' 
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide roll number and password',
             });
         }
 
-        const student = await Student.findOne({ rollNumber }).select('+password');
+        const student = await Student.scope('withPassword').findOne({
+            where: { rollNumber: rollNumber.toUpperCase() },
+        });
 
         if (!student || !(await student.matchPassword(password))) {
-            return res.status(401).json({ 
-                success: false, 
-                message: 'Invalid credentials' 
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid credentials',
             });
         }
 
-        const token = generateToken(student._id);
+        const token = generateToken(student.id);
 
         res.status(200).json({
             success: true,
             message: 'Login successful!',
             token,
             user: {
-                id: student._id,
+                id: student.id,
                 rollNumber: student.rollNumber,
                 name: student.name,
                 email: student.collegeEmail,
                 department: student.department,
                 year: student.year,
-                role: 'student'
-            }
-        });
-    } catch (error) {
-        next(error); // Pass to global error handler
-    }
-};
-
-// ==================== FACULTY AUTH ====================
-
-exports.registerFaculty = async (req, res, next) => { // Added next
-    try {
-        const { facultyId, collegeEmail, password, name, department } = req.body;
-
-        const facultyExists = await Faculty.findOne({ 
-            $or: [{ facultyId }, { collegeEmail }] 
-        });
-
-        if (facultyExists) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Faculty already exists with this ID or email' 
-            });
-        }
-
-        const faculty = await Faculty.create({
-            facultyId, collegeEmail, password, name, department
-        });
-
-        const token = generateToken(faculty._id);
-
-        res.status(201).json({
-            success: true,
-            message: 'Registration successful!',
-            token,
-            user: {
-                id: faculty._id,
-                facultyId: faculty.facultyId,
-                name: faculty.name,
-                email: faculty.collegeEmail,
-                department: faculty.department,
-                role: 'faculty'
-            }
+                section: student.section,
+                role: 'student',
+            },
         });
     } catch (error) {
         next(error);
     }
 };
 
-exports.loginFaculty = async (req, res, next) => { // Added next
+// ==================== FACULTY AUTH ====================
+
+exports.registerFaculty = async (req, res, next) => {
+    try {
+        const { facultyId, collegeEmail, password, name, department } = req.body;
+
+        if (!facultyId || !collegeEmail || !password || !name || !department) {
+            return res.status(400).json({ success: false, message: 'All fields are required' });
+        }
+
+        const existingFaculty = await Faculty.scope('withPassword').findOne({
+            where: { facultyId: facultyId.toUpperCase() },
+        });
+
+        if (existingFaculty) {
+            return res.status(400).json({
+                success: false,
+                message: 'Faculty already exists with this ID',
+            });
+        }
+
+        const emailExists = await Faculty.findOne({ where: { collegeEmail: collegeEmail.toLowerCase() } });
+        if (emailExists) {
+            return res.status(400).json({
+                success: false,
+                message: 'Faculty already exists with this email',
+            });
+        }
+
+        const faculty = await Faculty.create({
+            facultyId, collegeEmail, password, name, department,
+        });
+
+        const token = generateToken(faculty.id);
+
+        res.status(201).json({
+            success: true,
+            message: 'Registration successful!',
+            token,
+            user: {
+                id: faculty.id,
+                facultyId: faculty.facultyId,
+                name: faculty.name,
+                email: faculty.collegeEmail,
+                department: faculty.department,
+                role: 'faculty',
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.loginFaculty = async (req, res, next) => {
     try {
         const { facultyId, password } = req.body;
 
         if (!facultyId || !password) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Please provide faculty ID and password' 
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide faculty ID and password',
             });
         }
 
-        const faculty = await Faculty.findOne({ facultyId }).select('+password');
+        const faculty = await Faculty.scope('withPassword').findOne({
+            where: { facultyId: facultyId.toUpperCase() },
+        });
 
         if (!faculty || !(await faculty.matchPassword(password))) {
-            return res.status(401).json({ 
-                success: false, 
-                message: 'Invalid credentials' 
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid credentials',
             });
         }
 
-        const token = generateToken(faculty._id);
+        const token = generateToken(faculty.id);
 
         res.status(200).json({
             success: true,
             message: 'Login successful!',
             token,
             user: {
-                id: faculty._id,
+                id: faculty.id,
                 facultyId: faculty.facultyId,
                 name: faculty.name,
                 email: faculty.collegeEmail,
                 department: faculty.department,
-                role: 'faculty'
-            }
+                role: 'faculty',
+            },
         });
     } catch (error) {
         next(error);

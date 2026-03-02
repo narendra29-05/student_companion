@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  Box, Typography, TextField, Button, Stack, Paper, 
-  ToggleButton, ToggleButtonGroup, MenuItem, IconButton, 
-  InputAdornment, Grid, ThemeProvider, createTheme, CssBaseline 
+import {
+  Box, Typography, TextField, Button, Stack, Paper, Alert,
+  ToggleButton, ToggleButtonGroup, MenuItem, IconButton,
+  InputAdornment, Grid, ThemeProvider, createTheme, CssBaseline
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
 
 // Icons
 import { 
@@ -75,8 +77,11 @@ const FloatingSymbol = ({ icon: Icon, delay, x, y, label, size, isDark }) => (
 
 const Register = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [mode, setMode] = useState('dark');
   const isDark = mode === 'dark';
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const theme = useMemo(() => createTheme({
     palette: {
@@ -93,11 +98,56 @@ const Register = () => {
   const [role, setRole] = useState('student');
   const [showPwd, setShowPwd] = useState(false);
   const [formData, setFormData] = useState({
-    name: '', identifier: '', collegeEmail: '', department: '', year: '1', password: '', confirmPassword: ''
+    name: '', identifier: '', collegeEmail: '', department: '', year: 1, password: '', confirmPassword: ''
   });
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
   const passwordsMatch = formData.password && formData.confirmPassword && formData.password === formData.confirmPassword;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!formData.name || !formData.identifier || !formData.collegeEmail || !formData.department || !formData.password) {
+      setError('All fields are required');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const userData = role === 'student'
+        ? {
+            rollNumber: formData.identifier.toUpperCase(),
+            collegeEmail: formData.collegeEmail,
+            password: formData.password,
+            name: formData.name,
+            department: formData.department,
+            year: Number(formData.year),
+          }
+        : {
+            facultyId: formData.identifier.toUpperCase(),
+            collegeEmail: formData.collegeEmail,
+            password: formData.password,
+            name: formData.name,
+            department: formData.department,
+          };
+
+      await register(userData, role);
+      toast.success('Registration successful!');
+      navigate(role === 'student' ? '/student/dashboard' : '/faculty/dashboard');
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Registration failed';
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -149,6 +199,9 @@ const Register = () => {
                 <ToggleButton value="faculty" sx={{ border: 'none', borderRadius: '12px !important', fontWeight: 900 }}>FACULTY</ToggleButton>
               </ToggleButtonGroup>
 
+              {error && <Alert severity="error" sx={{ borderRadius: '16px' }}>{error}</Alert>}
+
+              <form onSubmit={handleSubmit}>
               <Stack spacing={2}>
                 <TextField fullWidth label="Full Name" name="name" onChange={handleChange} variant="outlined" />
                 
@@ -195,29 +248,30 @@ const Register = () => {
                   </Grid>
                 </Grid>
 
-                <Button 
-                  variant="contained" fullWidth size="large" 
-                  sx={{ 
-                    py: 2, borderRadius: '18px', fontWeight: 900, 
+                <Button
+                  type="submit" variant="contained" fullWidth size="large" disabled={loading}
+                  sx={{
+                    py: 2, borderRadius: '18px', fontWeight: 900,
                     background: 'linear-gradient(45deg, #6366f1, #a855f7)',
                     boxShadow: '0 10px 30px rgba(99, 102, 241, 0.4)'
                   }}
                 >
-                  AUTHORIZE REGISTRATION
+                  {loading ? 'Processing...' : 'AUTHORIZE REGISTRATION'}
                 </Button>
 
                 {/* SIGN IN LINK */}
                 <Typography variant="body2" textAlign="center">
-                  Existing Member? 
-                  <Button 
-                    variant="text" 
-                    onClick={() => navigate('/login')} 
+                  Existing Member?
+                  <Button
+                    variant="text"
+                    onClick={() => navigate('/login')}
                     sx={{ fontWeight: 900, ml: 1, textDecoration: 'underline' }}
                   >
                     Sign In Here
                   </Button>
                 </Typography>
               </Stack>
+              </form>
             </Stack>
           </Paper>
         </motion.div>

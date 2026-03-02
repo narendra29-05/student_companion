@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import { 
-    Container, Typography, TextField, Button, Box, 
-    Paper, IconButton, List, ListItem, ListItemText, 
+import API from '../services/api';
+import {
+    Container, Typography, TextField, Button, Box,
+    Paper, IconButton, List, ListItem, ListItemText,
     Chip, Avatar, Stack, Tooltip, Zoom
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,9 +22,6 @@ const TodoTracker = () => {
     const [loading, setLoading] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(true);
 
-    const API_URL = 'http://localhost:5000/api/todos';
-    const token = localStorage.getItem('token');
-
     // Dynamic Theme Colors
     const theme = {
         bg: isDarkMode ? '#020617' : '#f8fafc',
@@ -37,14 +34,12 @@ const TodoTracker = () => {
 
     const fetchTasks = useCallback(async () => {
         try {
-            const res = await axios.get(API_URL, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setTasks(res.data.todos || []); 
+            const res = await API.get('/todos');
+            setTasks(res.data.todos || []);
         } catch (err) {
             console.error("Fetch failed");
         }
-    }, [token, API_URL]);
+    }, []);
 
     useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
@@ -52,11 +47,9 @@ const TodoTracker = () => {
         if (!input.trim()) return;
         setLoading(true);
         try {
-            await axios.post(API_URL, { task: input }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await API.post('/todos', { task: input });
             setInput('');
-            fetchTasks(); 
+            fetchTasks();
         } catch (err) {
             console.error("Add failed");
         } finally {
@@ -66,19 +59,17 @@ const TodoTracker = () => {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`${API_URL}/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            fetchTasks(); 
+            await API.delete(`/todos/${id}`);
+            fetchTasks();
         } catch (err) {
             console.error("Delete failed");
         }
     };
 
     return (
-        <Box sx={{ 
-            minHeight: '100vh', 
-            background: theme.bg, 
+        <Box sx={{
+            minHeight: '100vh',
+            background: theme.bg,
             py: 10,
             position: 'relative',
             overflow: 'hidden',
@@ -89,8 +80,8 @@ const TodoTracker = () => {
                 <Stack direction="row" spacing={2} alignItems="center">
                     {/* Task Counter HUD */}
                     <Zoom in={true}>
-                        <Paper sx={{ 
-                            px: 3, py: 1, borderRadius: '12px', 
+                        <Paper sx={{
+                            px: 3, py: 1, borderRadius: '12px',
                             background: isDarkMode ? 'rgba(99, 102, 241, 0.1)' : '#6366f1',
                             color: '#fff', border: '1px solid rgba(99, 102, 241, 0.2)',
                             boxShadow: '0 10px 20px rgba(99, 102, 241, 0.2)',
@@ -102,9 +93,9 @@ const TodoTracker = () => {
                     </Zoom>
 
                     {/* Theme Toggle Button */}
-                    <IconButton 
+                    <IconButton
                         onClick={() => setIsDarkMode(!isDarkMode)}
-                        sx={{ 
+                        sx={{
                             bgcolor: theme.card, border: `1px solid ${theme.border}`,
                             color: isDarkMode ? '#fbbf24' : '#6366f1',
                             '&:hover': { bgcolor: theme.inputBg }
@@ -130,31 +121,31 @@ const TodoTracker = () => {
                 </Box>
 
                 {/* --- INPUT TERMINAL --- */}
-                <Paper elevation={0} sx={{ 
-                    p: 1.5, mb: 6, borderRadius: '20px', 
-                    background: theme.card, 
+                <Paper elevation={0} sx={{
+                    p: 1.5, mb: 6, borderRadius: '20px',
+                    background: theme.card,
                     backdropFilter: 'blur(10px)',
                     border: `1px solid ${theme.border}`,
                     boxShadow: isDarkMode ? '0 20px 40px rgba(0,0,0,0.4)' : '0 10px 30px rgba(0,0,0,0.05)'
                 }}>
                     <Box sx={{ display: 'flex', gap: 1 }}>
-                        <TextField 
+                        <TextField
                             fullWidth
                             variant="standard"
                             placeholder="Initialize new objective..."
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleAdd()}
-                            InputProps={{ 
+                            InputProps={{
                                 disableUnderline: true,
                                 sx: { px: 2, py: 1, color: theme.text, fontSize: '1.1rem', fontWeight: 500 }
                             }}
                         />
-                        <Button 
-                            variant="contained" 
+                        <Button
+                            variant="contained"
                             onClick={handleAdd}
                             disabled={loading}
-                            sx={{ 
+                            sx={{
                                 borderRadius: '14px', minWidth: '56px',
                                 background: 'linear-gradient(45deg, #6366f1, #a855f7)',
                                 '&:hover': { background: 'linear-gradient(45deg, #4f46e5, #9333ea)' }
@@ -170,14 +161,14 @@ const TodoTracker = () => {
                     <AnimatePresence mode='popLayout'>
                         {tasks.length > 0 ? tasks.map((t, index) => (
                             <motion.div
-                                key={t._id}
+                                key={t.id}
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, x: 50, filter: 'blur(10px)' }}
                                 transition={{ type: "spring", stiffness: 200, damping: 20 }}
                             >
-                                <Paper sx={{ 
-                                    p: 0, mb: 3, borderRadius: '24px', 
+                                <Paper sx={{
+                                    p: 0, mb: 3, borderRadius: '24px',
                                     background: theme.card,
                                     border: `1px solid ${theme.border}`,
                                     overflow: 'hidden',
@@ -189,30 +180,30 @@ const TodoTracker = () => {
                                         boxShadow: isDarkMode ? '0 10px 30px rgba(99, 102, 241, 0.2)' : '0 10px 30px rgba(0,0,0,0.05)'
                                     }
                                 }}>
-                                    <Box sx={{ 
-                                        position: 'absolute', left: 0, top: 0, bottom: 0, width: '6px', 
-                                        background: 'linear-gradient(to bottom, #6366f1, #a855f7)' 
+                                    <Box sx={{
+                                        position: 'absolute', left: 0, top: 0, bottom: 0, width: '6px',
+                                        background: 'linear-gradient(to bottom, #6366f1, #a855f7)'
                                     }} />
 
                                     <ListItem sx={{ py: 3, px: 4 }}>
-                                        <Avatar sx={{ 
-                                            bgcolor: isDarkMode ? 'rgba(99, 102, 241, 0.1)' : '#eef2ff', 
-                                            color: '#6366f1', 
+                                        <Avatar sx={{
+                                            bgcolor: isDarkMode ? 'rgba(99, 102, 241, 0.1)' : '#eef2ff',
+                                            color: '#6366f1',
                                             mr: 3, width: 48, height: 48, border: `1px solid ${theme.border}`
                                         }}>
                                             <AssignmentIcon fontSize="small" />
                                         </Avatar>
-                                        <ListItemText 
-                                            primary={t.task} 
-                                            primaryTypographyProps={{ 
+                                        <ListItemText
+                                            primary={t.task}
+                                            primaryTypographyProps={{
                                                 fontWeight: 800, color: theme.text, fontSize: '1.2rem',
                                                 letterSpacing: '-0.02em'
                                             }}
-                                            secondary="Identity Verified • Secured"
+                                            secondary={t.isCompleted ? "Completed" : "Pending"}
                                             secondaryTypographyProps={{ color: theme.subText, fontWeight: 700, mt: 0.5 }}
                                         />
-                                        <IconButton 
-                                            onClick={() => handleDelete(t._id)}
+                                        <IconButton
+                                            onClick={() => handleDelete(t.id)}
                                             sx={{ color: isDarkMode ? 'rgba(244, 63, 94, 0.4)' : '#fda4af', '&:hover': { color: '#f43f5e', background: 'rgba(244, 63, 94, 0.1)' } }}
                                         >
                                             <DeleteOutlineIcon />

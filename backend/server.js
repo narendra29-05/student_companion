@@ -1,39 +1,63 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const connectDB = require('./config/db');
+const rateLimit = require('express-rate-limit');
+const { connectDB } = require('./config/db');
+const { syncDB } = require('./models');
+const errorHandler = require('./middleware/errorHandler');
+const { startDeadlineReminderCron } = require('./utils/emailService');
 
 dotenv.config();
-connectDB();
+
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+// CORS — restrict to frontend origin
+app.use(cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true,
+}));
 
-// --- ROUTES SECTION ---
-app.use('/api/auth', require('./routes/authRoutes'));
+app.use(express.json({ limit: '10mb' }));
+
+// Rate limiting on auth routes
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 20,
+    message: { success: false, message: 'Too many attempts, please try again after 15 minutes' },
+});
+
+// --- ROUTES ---
+app.use('/api/auth', authLimiter, require('./routes/authRoutes'));
 app.use('/api/drives', require('./routes/driveRoutes'));
+app.use('/api/todos', require('./routes/todoRoutes'));
+app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 
-// Add this inline for now to avoid file import errors
-const Todo = require('./models/Todo');
-const { protectStudent } = require('./middleware/authMiddleware');
-
-app.get('/api/todos', protectStudent, async (req, res) => {
-    const todos = await Todo.find({ student: req.student._id });
-    res.json({ success: true, todos });
+// Health check
+app.get('/api/health', (req, res) => {
+    res.json({ success: true, message: 'Server is running' });
 });
 
-app.post('/api/todos', protectStudent, async (req, res) => {
-    const todo = await Todo.create({ task: req.body.task, student: req.student._id });
-    res.json({ success: true, todo });
+// 404 handler
+app.use((req, res) => {
+    res.status(404).json({ success: false, message: 'Route not found' });
 });
 
-app.delete('/api/todos/:id', protectStudent, async (req, res) => {
-    await Todo.findByIdAndDelete(req.params.id);
-    res.json({ success: true });
+// Global error handler (must be last)
+app.use(errorHandler);
+
+// Start server
+const PORT = process.env.PORT || 5000;
+
+const start = async () => {
+    await connectDB();
+    await syncDB();
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+        startDeadlineReminderCron();
+    });
+};
+
+start().catch((err) => {
+    console.error('Failed to start server:', err);
+    process.exit(1);
 });
-
-// --- 404 HANDLER MUST BE LAST ---
-app.use((req, res) => res.status(404).send("Not Found"));
-
-app.listen(5000, () => console.log('Server running on 5000'));

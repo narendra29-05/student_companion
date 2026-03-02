@@ -56,7 +56,7 @@ const StudentDashboard = () => {
     const handleStatusChange = async (driveId, newStatus) => {
         try {
             setDrives(prevDrives => 
-                prevDrives.map(d => d._id === driveId ? { ...d, isApplied: newStatus === 'applied' } : d)
+                prevDrives.map(d => d.id === driveId ? { ...d, isApplied: newStatus === 'applied' } : d)
             );
             await API.post(`/drives/${newStatus === 'applied' ? 'apply' : 'unapply'}/${driveId}`);
         } catch (err) { console.error("Failed to update status"); }
@@ -111,10 +111,10 @@ const StudentDashboard = () => {
                         <AnimatePresence>
                             {drives.map((drive) => {
                                 const daysRemaining = getDaysRemaining(drive.expiryDate);
-                                const isApplied = drive.isApplied || drive.appliedStudents?.includes(user?._id);
+                                const isApplied = drive.isApplied;
 
                                 return (
-                                    <Grid item xs={12} md={6} lg={4} key={drive._id}>
+                                    <Grid item xs={12} md={6} lg={4} key={drive.id}>
                                         <motion.div variants={cardVariants} whileHover={{ y: -10 }}>
                                             <Card sx={{ 
                                                 borderRadius: '24px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
@@ -167,7 +167,7 @@ const StudentDashboard = () => {
                                                         <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 1 }}>ELIGIBLE BRANCHES</Typography>
                                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                                             {drive.eligibleDepartments?.map((dept, idx) => (
-                                                                <Chip key={idx} label={dept} size="small" sx={{ borderRadius: '6px', fontSize: '10px', fontWeight: 700 }} />
+                                                                <Chip key={idx} label={dept.department || dept} size="small" sx={{ borderRadius: '6px', fontSize: '10px', fontWeight: 700 }} />
                                                             ))}
                                                         </Box>
                                                     </Box>
@@ -177,7 +177,7 @@ const StudentDashboard = () => {
                                                         <Select
                                                             value={isApplied ? 'applied' : 'not_applied'}
                                                             label="Self-Track Status"
-                                                            onChange={(e) => handleStatusChange(drive._id, e.target.value)}
+                                                            onChange={(e) => handleStatusChange(drive.id, e.target.value)}
                                                             sx={{ borderRadius: '12px' }}
                                                         >
                                                             <MenuItem value="not_applied">Mark as Interested</MenuItem>
@@ -192,13 +192,13 @@ const StudentDashboard = () => {
                                                                 {daysRemaining} Days Left
                                                             </Typography>
                                                         </Box>
-                                                        <IconButton size="small" onClick={() => handleExpandClick(drive._id)}>
+                                                        <IconButton size="small" onClick={() => handleExpandClick(drive.id)}>
                                                             <Typography variant="caption" sx={{ fontWeight: 700, mr: 0.5 }}>Details</Typography>
-                                                            <ExpandMoreIcon sx={{ transform: expandedId === drive._id ? 'rotate(180deg)' : 'rotate(0deg)', transition: '0.3s' }} />
+                                                            <ExpandMoreIcon sx={{ transform: expandedId === drive.id ? 'rotate(180deg)' : 'rotate(0deg)', transition: '0.3s' }} />
                                                         </IconButton>
                                                     </Box>
 
-                                                    <Collapse in={expandedId === drive._id} timeout="auto" unmountOnExit>
+                                                    <Collapse in={expandedId === drive.id} timeout="auto" unmountOnExit>
                                                         <Typography variant="body2" sx={{ mt: 2, color: '#475569', lineHeight: 1.6, background: '#f8fafc', p: 2, borderRadius: '12px' }}>
                                                             {drive.description || "No specific details shared."}
                                                         </Typography>
@@ -209,7 +209,7 @@ const StudentDashboard = () => {
                                                     <Button
                                                         variant="contained"
                                                         fullWidth
-                                                        onClick={() => handleApplyClick(drive._id, drive.driveLink)}
+                                                        onClick={() => handleApplyClick(drive.id, drive.driveLink)}
                                                         sx={{ 
                                                             py: 1.5, borderRadius: '14px', fontWeight: 800, textTransform: 'none', fontSize: '1rem',
                                                             background: isApplied ? '#f1f5f9' : 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',

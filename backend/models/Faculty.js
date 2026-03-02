@@ -1,57 +1,86 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
 const bcrypt = require('bcryptjs');
+const { DEPARTMENTS } = require('../config/constants');
 
-const facultySchema = new mongoose.Schema({
+const Faculty = sequelize.define('Faculty', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+    },
     facultyId: {
-        type: String,
-        required: [true, 'Faculty ID is required'],
+        type: DataTypes.STRING(20),
+        allowNull: false,
         unique: true,
-        uppercase: true,
-        trim: true
+        set(val) {
+            this.setDataValue('facultyId', val.toUpperCase().trim());
+        },
     },
     collegeEmail: {
-        type: String,
-        required: [true, 'College email is required'],
+        type: DataTypes.STRING(100),
+        allowNull: false,
         unique: true,
-        lowercase: true
+        validate: {
+            isEmail: true,
+            isCollegeEmail(value) {
+                if (!/^[\w.-]+@[\w-]+\.(edu|ac\.in|edu\.in)$/i.test(value)) {
+                    throw new Error('Please use a valid college email');
+                }
+            },
+        },
+        set(val) {
+            this.setDataValue('collegeEmail', val.toLowerCase().trim());
+        },
     },
     password: {
-        type: String,
-        required: [true, 'Password is required'],
-        minlength: 6,
-        select: false
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        validate: {
+            len: [6, 255],
+        },
     },
     name: {
-        type: String,
-        required: [true, 'Name is required'],
-        trim: true
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        set(val) {
+            this.setDataValue('name', val.trim());
+        },
     },
     department: {
-        type: String,
-        required: true
+        type: DataTypes.STRING(10),
+        allowNull: false,
+        validate: {
+            isIn: [DEPARTMENTS],
+        },
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
+}, {
+    tableName: 'faculty',
+    timestamps: true,
+    defaultScope: {
+        attributes: { exclude: ['password'] },
+    },
+    scopes: {
+        withPassword: {
+            attributes: { include: ['password'] },
+        },
+    },
 });
 
-// Updated Pre-save logic
-facultySchema.pre('save', async function() {
-    // If password is not modified, simply return to stop the function
-    if (!this.isModified('password')) {
-        return; 
-    }
-
-    // Hash password
+Faculty.beforeCreate(async (faculty) => {
     const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    
-    // No next() call needed here!
+    faculty.password = await bcrypt.hash(faculty.password, salt);
 });
 
-facultySchema.methods.matchPassword = async function(enteredPassword) {
+Faculty.beforeUpdate(async (faculty) => {
+    if (faculty.changed('password')) {
+        const salt = await bcrypt.genSalt(10);
+        faculty.password = await bcrypt.hash(faculty.password, salt);
+    }
+});
+
+Faculty.prototype.matchPassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-module.exports = mongoose.model('Faculty', facultySchema);
+module.exports = Faculty;

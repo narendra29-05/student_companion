@@ -9,9 +9,11 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import StudentDashboard from './pages/StudentDashboard';
 import FacultyDashboard from './pages/FacultyDashboard';
-import ResourcePage from './pages/ResourcePage'; // We will create this below
+import ResourcePage from './pages/ResourcePage';
 import Materials from './pages/Materials';
-import TodoTracker from './pages/TodoTracker';// Protected Route Component
+import TodoTracker from './pages/TodoTracker';
+
+// Protected Route Component
 const ProtectedRoute = ({ children, allowedRole }) => {
     const { user, loading } = useAuth();
 
@@ -34,49 +36,54 @@ function AppContent() {
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                
+
                 {/* Student Routes */}
-                
-                <Route 
-                    path="/student/dashboard" 
+                <Route
+                    path="/student/dashboard"
                     element={
                         <ProtectedRoute allowedRole="student">
                             <StudentDashboard />
                         </ProtectedRoute>
-                    } 
+                    }
                 />
-                <Route 
-                    path="/student/attendance" 
+                <Route
+                    path="/student/attendance"
                     element={
                         <ProtectedRoute allowedRole="student">
-                            <ResourcePage 
-                                title="Attendance Portal" 
+                            <ResourcePage
+                                title="Attendance Portal"
                                 description="Check your semester-wise attendance and percentage."
-                                link="https://attendance.sandyy.in/" 
+                                link="https://attendance.sandyy.in/"
                             />
                         </ProtectedRoute>
-                    } 
+                    }
                 />
-                
+                <Route
+                    path="/student/materials"
+                    element={
+                        <ProtectedRoute allowedRole="student">
+                            <Materials />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/student/todos"
+                    element={
+                        <ProtectedRoute allowedRole="student">
+                            <TodoTracker />
+                        </ProtectedRoute>
+                    }
+                />
 
                 {/* Faculty Routes */}
-                <Route 
-                    path="/faculty/dashboard" 
+                <Route
+                    path="/faculty/dashboard"
                     element={
                         <ProtectedRoute allowedRole="faculty">
                             <FacultyDashboard />
                         </ProtectedRoute>
-                    } 
+                    }
                 />
-<Route path="/student/todos" element={<TodoTracker />} />          
-      <Route 
-    path="/student/materials" 
-    element={
-        <ProtectedRoute allowedRole="student">
-            <Materials />
-        </ProtectedRoute>
-    } 
-/>
             </Routes>
             <ToastContainer position="top-right" autoClose={3000} />
         </Router>

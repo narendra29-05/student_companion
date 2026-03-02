@@ -1,67 +1,100 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
 const bcrypt = require('bcryptjs');
+const { DEPARTMENTS } = require('../config/constants');
 
-const studentSchema = new mongoose.Schema({
+const Student = sequelize.define('Student', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+    },
     rollNumber: {
-        type: String,
-        required: [true, 'Roll number is required'],
+        type: DataTypes.STRING(20),
+        allowNull: false,
         unique: true,
-        uppercase: true,
-        trim: true
+        set(val) {
+            this.setDataValue('rollNumber', val.toUpperCase().trim());
+        },
     },
     collegeEmail: {
-        type: String,
-        required: [true, 'College email is required'],
+        type: DataTypes.STRING(100),
+        allowNull: false,
         unique: true,
-        lowercase: true,
-        match: [/^[\w-\.]+@[\w-]+\.(edu|ac\.in|edu\.in)$/i, 'Please use valid college email']
+        validate: {
+            isEmail: true,
+            isCollegeEmail(value) {
+                if (!/^[\w.-]+@[\w-]+\.(edu|ac\.in|edu\.in)$/i.test(value)) {
+                    throw new Error('Please use a valid college email');
+                }
+            },
+        },
+        set(val) {
+            this.setDataValue('collegeEmail', val.toLowerCase().trim());
+        },
     },
     password: {
-        type: String,
-        required: [true, 'Password is required'],
-        minlength: 6,
-        select: false
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        validate: {
+            len: [6, 255],
+        },
     },
     name: {
-        type: String,
-        required: [true, 'Name is required'],
-        trim: true
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        set(val) {
+            this.setDataValue('name', val.trim());
+        },
     },
     department: {
-        type: String,
-        required: true
+        type: DataTypes.STRING(10),
+        allowNull: false,
+        validate: {
+            isIn: [DEPARTMENTS],
+        },
     },
     year: {
-        type: Number,
-        required: true
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: {
+            min: 1,
+            max: 4,
+        },
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
+    section: {
+        type: DataTypes.STRING(5),
+        allowNull: true,
+    },
+}, {
+    tableName: 'students',
+    timestamps: true,
+    defaultScope: {
+        attributes: { exclude: ['password'] },
+    },
+    scopes: {
+        withPassword: {
+            attributes: { include: ['password'] },
+        },
+    },
 });
 
-// Encrypt password using bcrypt before saving
-// Hash password before saving
-studentSchema.pre('save', async function() {
-    // 1. Only hash if password is modified
-    if (!this.isModified('password')) {
-        return; // Just return, don't call next()
-    }
+// Hash password before create/update
+Student.beforeCreate(async (student) => {
+    const salt = await bcrypt.genSalt(10);
+    student.password = await bcrypt.hash(student.password, salt);
+});
 
-    try {
-        // 2. Generate salt and hash
+Student.beforeUpdate(async (student) => {
+    if (student.changed('password')) {
         const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
-        // 3. No next() needed here! 
-    } catch (error) {
-        throw error; // Mongoose will catch this and pass it to your error handler
+        student.password = await bcrypt.hash(student.password, salt);
     }
 });
 
-// Compare entered password with hashed password in database
-studentSchema.methods.matchPassword = async function(enteredPassword) {
+// Instance method to compare passwords
+Student.prototype.matchPassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-module.exports = mongoose.model('Student', studentSchema);
+module.exports = Student;

@@ -1,56 +1,90 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
 
-const driveSchema = new mongoose.Schema({
+const Drive = sequelize.define('Drive', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+    },
     companyName: {
-        type: String,
-        required: [true, 'Company name is required'],
-        trim: true
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        set(val) {
+            this.setDataValue('companyName', val.trim());
+        },
     },
     role: {
-        type: String,
-        required: [true, 'Job role is required']
+        type: DataTypes.STRING(100),
+        allowNull: false,
     },
     driveLink: {
-        type: String,
-        required: [true, 'Drive link is required']
+        type: DataTypes.STRING(500),
+        allowNull: false,
     },
     description: {
-        type: String
+        type: DataTypes.TEXT,
+        allowNull: true,
     },
-    eligibleDepartments: [{
-        type: String
-    }],
     minCGPA: {
-        type: Number,
-        default: 0
+        type: DataTypes.FLOAT,
+        defaultValue: 0,
     },
     package: {
-        type: String
+        type: DataTypes.STRING(50),
+        allowNull: true,
     },
     expiryDate: {
-        type: Date,
-        required: [true, 'Expiry date is required']
+        type: DataTypes.DATE,
+        allowNull: false,
     },
     postedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Faculty',
-        required: true
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'faculty',
+            key: 'id',
+        },
     },
     isActive: {
-        type: Boolean,
-        default: true
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
+}, {
+    tableName: 'drives',
+    timestamps: true,
+    getterMethods: {
+        isExpired() {
+            return new Date() > this.expiryDate;
+        },
+    },
 });
 
-// Virtual to check if drive is expired
-driveSchema.virtual('isExpired').get(function() {
-    return new Date() > this.expiryDate;
+// Junction table for eligible departments
+const DriveEligibleDepartment = sequelize.define('DriveEligibleDepartment', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+    },
+    driveId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'drives',
+            key: 'id',
+        },
+    },
+    department: {
+        type: DataTypes.STRING(10),
+        allowNull: false,
+    },
+}, {
+    tableName: 'drive_eligible_departments',
+    timestamps: false,
 });
 
-driveSchema.set('toJSON', { virtuals: true });
+Drive.hasMany(DriveEligibleDepartment, { as: 'eligibleDepartments', foreignKey: 'driveId', onDelete: 'CASCADE' });
+DriveEligibleDepartment.belongsTo(Drive, { foreignKey: 'driveId' });
 
-module.exports = mongoose.model('Drive', driveSchema);
+module.exports = { Drive, DriveEligibleDepartment };

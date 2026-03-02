@@ -1,124 +1,200 @@
-const Drive = require('../models/Drive');
+const { Op } = require('sequelize');
+const { Drive, DriveEligibleDepartment } = require('../models/Drive');
+const Faculty = require('../models/Faculty');
+const { notifyNewDrive, notifyDriveUpdate, detectChanges } = require('../utils/emailService');
 
 // @desc    Create new drive (Faculty only)
 // @route   POST /api/drives
-exports.createDrive = async (req, res) => {
+exports.createDrive = async (req, res, next) => {
     try {
         const { companyName, role, driveLink, description, eligibleDepartments, minCGPA, package: salary, expiryDate } = req.body;
+
+        if (!companyName || !role || !driveLink || !expiryDate) {
+            return res.status(400).json({ success: false, message: 'Company name, role, drive link, and expiry date are required' });
+        }
 
         const drive = await Drive.create({
             companyName,
             role,
             driveLink,
             description,
-            eligibleDepartments,
             minCGPA,
             package: salary,
             expiryDate,
-            postedBy: req.faculty._id
+            postedBy: req.faculty.id,
+        });
+
+        // Add eligible departments
+        if (eligibleDepartments && eligibleDepartments.length > 0) {
+            const deptRecords = eligibleDepartments.map((dept) => ({
+                driveId: drive.id,
+                department: dept,
+            }));
+            await DriveEligibleDepartment.bulkCreate(deptRecords);
+        }
+
+        const result = await Drive.findByPk(drive.id, {
+            include: [{ model: DriveEligibleDepartment, as: 'eligibleDepartments' }],
         });
 
         res.status(201).json({
             success: true,
             message: 'Drive created successfully!',
-            drive
+            drive: result,
         });
+
+        // Fire-and-forget email notification to eligible students
+        const departments = eligibleDepartments && eligibleDepartments.length > 0
+            ? eligibleDepartments : [];
+        notifyNewDrive(drive, departments);
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-// @desc    Get all drives (Faculty)
+// @desc    Get all drives (Faculty — only their own)
 // @route   GET /api/drives/faculty
-exports.getAllDrivesFaculty = async (req, res) => {
+exports.getAllDrivesFaculty = async (req, res, next) => {
     try {
-        const drives = await Drive.find({ postedBy: req.faculty._id })
-            .sort({ createdAt: -1 });
-
-        res.status(200).json({
-            success: true,
-            count: drives.length,
-            drives
+        const drives = await Drive.findAll({
+            where: { postedBy: req.faculty.id },
+            include: [{ model: DriveEligibleDepartment, as: 'eligibleDepartments' }],
+            order: [['createdAt', 'DESC']],
         });
+
+        res.status(200).json({ success: true, count: drives.length, drives });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
-// @desc    Get active drives for students (non-expired only)
+// @desc    Get active drives for students (filtered by student's department)
 // @route   GET /api/drives/student
-exports.getActiveDrivesStudent = async (req, res) => {
+exports.getActiveDrivesStudent = async (req, res, next) => {
     try {
-        const currentDate = new Date();
-        
-        const drives = await Drive.find({
-            expiryDate: { $gte: currentDate },
-            isActive: true
-        })
-        .populate('postedBy', 'name department')
-        .sort({ createdAt: -1 });
+        const studentDept = req.student.department;
 
-        res.status(200).json({
-            success: true,
-            count: drives.length,
-            drives
+        const drives = await Drive.findAll({
+            where: {
+                expiryDate: { [Op.gte]: new Date() },
+                isActive: true,
+            },
+            include: [
+                {
+                    model: DriveEligibleDepartment,
+                    as: 'eligibleDepartments',
+                    where: { department: studentDept },
+                    required: false,
+                },
+                {
+                    model: Faculty,
+                    as: 'faculty',
+                    attributes: ['name', 'department'],
+                },
+            ],
+            order: [['createdAt', 'DESC']],
         });
+
+        // Filter: show drives that have no dept restriction OR include student's dept
+        const filtered = drives.filter((d) => {
+            return d.eligibleDepartments.length === 0 ||
+                d.eligibleDepartments.some((ed) => ed.department === studentDept);
+        });
+
+        res.status(200).json({ success: true, count: filtered.length, drives: filtered });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
 // @desc    Update drive
 // @route   PUT /api/drives/:id
-exports.updateDrive = async (req, res) => {
+exports.updateDrive = async (req, res, next) => {
     try {
-        let drive = await Drive.findById(req.params.id);
+        const drive = await Drive.findByPk(req.params.id);
 
         if (!drive) {
             return res.status(404).json({ success: false, message: 'Drive not found' });
         }
 
-        // Make sure faculty owns the drive
-        if (drive.postedBy.toString() !== req.faculty._id.toString()) {
-            return res.status(401).json({ success: false, message: 'Not authorized to update this drive' });
+        if (drive.postedBy !== req.faculty.id) {
+            return res.status(403).json({ success: false, message: 'Not authorized to update this drive' });
         }
 
-        drive = await Drive.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-            runValidators: true
+        const { companyName, role, driveLink, description, eligibleDepartments, minCGPA, package: salary, expiryDate, isActive } = req.body;
+
+        // Snapshot old values before updating
+        const oldValues = {
+            companyName: drive.companyName,
+            role: drive.role,
+            driveLink: drive.driveLink,
+            description: drive.description,
+            minCGPA: drive.minCGPA,
+            package: drive.package,
+            expiryDate: drive.expiryDate,
+            isActive: drive.isActive,
+        };
+
+        await drive.update({
+            companyName: companyName || drive.companyName,
+            role: role || drive.role,
+            driveLink: driveLink || drive.driveLink,
+            description: description !== undefined ? description : drive.description,
+            minCGPA: minCGPA !== undefined ? minCGPA : drive.minCGPA,
+            package: salary !== undefined ? salary : drive.package,
+            expiryDate: expiryDate || drive.expiryDate,
+            isActive: isActive !== undefined ? isActive : drive.isActive,
+        });
+
+        // Update eligible departments if provided
+        if (eligibleDepartments) {
+            await DriveEligibleDepartment.destroy({ where: { driveId: drive.id } });
+            if (eligibleDepartments.length > 0) {
+                const deptRecords = eligibleDepartments.map((dept) => ({
+                    driveId: drive.id,
+                    department: dept,
+                }));
+                await DriveEligibleDepartment.bulkCreate(deptRecords);
+            }
+        }
+
+        const result = await Drive.findByPk(drive.id, {
+            include: [{ model: DriveEligibleDepartment, as: 'eligibleDepartments' }],
         });
 
         res.status(200).json({
             success: true,
             message: 'Drive updated successfully!',
-            drive
+            drive: result,
         });
+
+        // Fire-and-forget: detect what changed and notify students
+        const changes = detectChanges(oldValues, drive.toJSON());
+        const currentDepts = result.eligibleDepartments.map((ed) => ed.department);
+        notifyDriveUpdate(drive, currentDepts, changes);
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };
 
 // @desc    Delete drive
 // @route   DELETE /api/drives/:id
-exports.deleteDrive = async (req, res) => {
+exports.deleteDrive = async (req, res, next) => {
     try {
-        const drive = await Drive.findById(req.params.id);
+        const drive = await Drive.findByPk(req.params.id);
 
         if (!drive) {
             return res.status(404).json({ success: false, message: 'Drive not found' });
         }
 
-        if (drive.postedBy.toString() !== req.faculty._id.toString()) {
-            return res.status(401).json({ success: false, message: 'Not authorized to delete this drive' });
+        if (drive.postedBy !== req.faculty.id) {
+            return res.status(403).json({ success: false, message: 'Not authorized to delete this drive' });
         }
 
-        await drive.deleteOne();
+        await drive.destroy();
 
-        res.status(200).json({
-            success: true,
-            message: 'Drive deleted successfully!'
-        });
+        res.status(200).json({ success: true, message: 'Drive deleted successfully!' });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        next(error);
     }
 };

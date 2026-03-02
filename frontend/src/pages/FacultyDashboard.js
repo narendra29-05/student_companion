@@ -54,7 +54,7 @@ const FacultyDashboard = () => {
                 role: drive.role,
                 driveLink: drive.driveLink,
                 description: drive.description || '',
-                eligibleDepartments: drive.eligibleDepartments || [],
+                eligibleDepartments: (drive.eligibleDepartments || []).map(d => d.department || d),
                 minCGPA: drive.minCGPA || '',
                 package: drive.package || '',
                 expiryDate: drive.expiryDate.split('T')[0]
@@ -85,7 +85,7 @@ const FacultyDashboard = () => {
     const handleSubmit = async () => {
         try {
             if (editMode) {
-                await API.put(`/drives/${currentDrive._id}`, formData);
+                await API.put(`/drives/${currentDrive.id}`, formData);
                 toast.success('Drive updated successfully!');
             } else {
                 await API.post('/drives', formData);
@@ -152,7 +152,7 @@ const FacultyDashboard = () => {
             ) : (
                 <Grid container spacing={3}>
                     {drives.map((drive) => (
-                        <Grid item xs={12} md={6} lg={4} key={drive._id}>
+                        <Grid item xs={12} md={6} lg={4} key={drive.id}>
                             <Card 
                                 elevation={4}
                                 sx={{ 
@@ -189,7 +189,7 @@ const FacultyDashboard = () => {
                                     <IconButton color="primary" onClick={() => handleOpenDialog(drive)}>
                                         <Edit />
                                     </IconButton>
-                                    <IconButton color="error" onClick={() => handleDelete(drive._id)}>
+                                    <IconButton color="error" onClick={() => handleDelete(drive.id)}>
                                         <Delete />
                                     </IconButton>
                                 </CardActions>

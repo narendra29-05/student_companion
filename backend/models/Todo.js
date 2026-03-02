@@ -1,15 +1,38 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
 
-const todoSchema = new mongoose.Schema({
-    student: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Student',
-        required: true
+const Todo = sequelize.define('Todo', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
     },
-    task: { type: String, required: true },
-    isCompleted: { type: Boolean, default: false },
-    deadline: { type: Date },
-    createdAt: { type: Date, default: Date.now }
+    studentId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'students',
+            key: 'id',
+        },
+    },
+    task: {
+        type: DataTypes.STRING(500),
+        allowNull: false,
+    },
+    isCompleted: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
+    deadline: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
+}, {
+    tableName: 'todos',
+    timestamps: true,
+    indexes: [
+        { fields: ['studentId'] },
+    ],
 });
 
-module.exports = mongoose.model('Todo', todoSchema);
+module.exports = Todo;
