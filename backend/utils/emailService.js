@@ -86,22 +86,56 @@ const fieldLabels = {
     isActive: 'Active Status',
 };
 
-// --- Welcome Email ---
+// --- Student Welcome Email ---
 const sendWelcomeEmail = async (student) => {
     const html = `
-        <h2>Welcome, ${student.name}!</h2>
-        <p>Your account has been created successfully. Here are your details:</p>
+        <h2>Congratulations, ${student.name}! 🎉</h2>
+        <p>You have successfully created your account on <strong>Student Companion</strong>. We're thrilled to have you on board!</p>
         <div class="detail">
             <strong>Roll Number:</strong> ${student.rollNumber}<br>
             <strong>Department:</strong> ${student.department}<br>
             <strong>Year:</strong> ${student.year}${student.section ? ` | Section: ${student.section}` : ''}
         </div>
-        <p>You can now log in to access placement drives, study materials, and more.</p>
+        <p>Here's what you can do on the platform:</p>
+        <ul>
+            <li><strong>Placement Drives</strong> — Browse and apply to drives matching your department and CGPA</li>
+            <li><strong>Study Resources</strong> — Access study materials shared by faculty</li>
+            <li><strong>Todo Tracker</strong> — Stay organized with your personal task manager</li>
+            <li><strong>Deadline Reminders</strong> — Get notified before drive deadlines expire</li>
+        </ul>
+        <p>Complete your profile to get the most out of Student Companion.</p>
+        <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/student/profile" class="btn">Complete Your Profile</a>
     `;
 
     await sendEmail({
         to: student.collegeEmail,
-        subject: 'Welcome to Student Companion!',
+        subject: 'Congratulations! Welcome to Student Companion 🎉',
+        html: baseTemplate(html),
+    });
+};
+
+// --- Faculty Welcome Email ---
+const sendFacultyWelcomeEmail = async (faculty) => {
+    const html = `
+        <h2>Welcome, ${faculty.name}! 🎉</h2>
+        <p>Congratulations! Your faculty account on <strong>Student Companion</strong> has been created successfully.</p>
+        <div class="detail">
+            <strong>Faculty ID:</strong> ${faculty.facultyId}<br>
+            <strong>Department:</strong> ${faculty.department}
+        </div>
+        <p>As a faculty member, you can:</p>
+        <ul>
+            <li><strong>Post Placement Drives</strong> — Create and manage drives for your students</li>
+            <li><strong>Share Resources</strong> — Upload study materials for students</li>
+            <li><strong>Track Applications</strong> — Monitor student participation in drives</li>
+            <li><strong>Send Notifications</strong> — Students are automatically notified about new drives and updates</li>
+        </ul>
+        <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/faculty/dashboard" class="btn">Go to Dashboard</a>
+    `;
+
+    await sendEmail({
+        to: faculty.collegeEmail,
+        subject: 'Welcome to Student Companion — Faculty Account Created 🎉',
         html: baseTemplate(html),
     });
 };
@@ -229,6 +263,8 @@ const detectChanges = (oldDrive, newData) => {
 // --- Notify eligible students (new drive) ---
 const notifyNewDrive = async (drive, departments) => {
     try {
+        console.log(`[Drive Notify] New drive "${drive.companyName}" — notifying departments: ${departments?.join(', ') || 'ALL'}`);
+
         const where = {};
         // If departments list is non-empty and doesn't include 'ALL', filter by department
         const hasAll = departments && departments.includes('ALL');
@@ -238,26 +274,38 @@ const notifyNewDrive = async (drive, departments) => {
         // If 'ALL' or empty list → no department filter, sends to everyone
 
         const students = await Student.findAll({ where });
-        if (students.length === 0) return;
+        if (students.length === 0) {
+            console.log('[Drive Notify] No eligible students found — skipping');
+            return;
+        }
+
+        console.log(`[Drive Notify] Found ${students.length} eligible student(s), sending emails...`);
 
         const BATCH_SIZE = 10;
         for (let i = 0; i < students.length; i += BATCH_SIZE) {
             const batch = students.slice(i, i + BATCH_SIZE);
-            await Promise.allSettled(
+            const results = await Promise.allSettled(
                 batch.map((s) => sendNewDriveEmail(s, drive))
             );
+            const failed = results.filter((r) => r.status === 'rejected').length;
+            if (failed > 0) console.warn(`[Drive Notify] Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${failed}/${batch.length} email(s) failed`);
         }
 
-        console.log(`New drive notification sent to ${students.length} student(s)`);
+        console.log(`[Drive Notify] New drive notification sent to ${students.length} student(s)`);
     } catch (error) {
-        console.error('Failed to notify students (new drive):', error.message);
+        console.error('[Drive Notify] Failed to notify students (new drive):', error.message);
     }
 };
 
 // --- Notify eligible students (drive updated with changes) ---
 const notifyDriveUpdate = async (drive, departments, changes) => {
     try {
-        if (changes.length === 0) return; // no actual changes, skip
+        if (changes.length === 0) {
+            console.log(`[Drive Notify] Drive "${drive.companyName}" updated but no meaningful changes detected — skipping notifications`);
+            return;
+        }
+
+        console.log(`[Drive Notify] Drive "${drive.companyName}" updated — changes: ${changes.map((c) => c.label).join(', ')}. Notifying departments: ${departments?.join(', ') || 'ALL'}`);
 
         const where = {};
         const hasAll = departments && departments.includes('ALL');
@@ -266,19 +314,26 @@ const notifyDriveUpdate = async (drive, departments, changes) => {
         }
 
         const students = await Student.findAll({ where });
-        if (students.length === 0) return;
+        if (students.length === 0) {
+            console.log('[Drive Notify] No eligible students found — skipping');
+            return;
+        }
+
+        console.log(`[Drive Notify] Found ${students.length} eligible student(s), sending update emails...`);
 
         const BATCH_SIZE = 10;
         for (let i = 0; i < students.length; i += BATCH_SIZE) {
             const batch = students.slice(i, i + BATCH_SIZE);
-            await Promise.allSettled(
+            const results = await Promise.allSettled(
                 batch.map((s) => sendDriveUpdateEmail(s, drive, changes))
             );
+            const failed = results.filter((r) => r.status === 'rejected').length;
+            if (failed > 0) console.warn(`[Drive Notify] Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${failed}/${batch.length} email(s) failed`);
         }
 
-        console.log(`Drive update notification sent to ${students.length} student(s) — changes: ${changes.map((c) => c.label).join(', ')}`);
+        console.log(`[Drive Notify] Drive update notification sent to ${students.length} student(s)`);
     } catch (error) {
-        console.error('Failed to notify students (drive update):', error.message);
+        console.error('[Drive Notify] Failed to notify students (drive update):', error.message);
     }
 };
 
@@ -336,8 +391,87 @@ const startDeadlineReminderCron = () => {
     console.log('Deadline reminder cron scheduled (daily at 8:00 AM)');
 };
 
+// --- Assignment Assigned Notification (to students) ---
+const sendAssignmentAssignedEmail = async (student, assignment, faculty) => {
+    const html = `
+        <h2>New Assignment Assigned</h2>
+        <p>Hi ${student.name},</p>
+        <p>You have been assigned a new assignment by <strong>${faculty.name}</strong> (${faculty.department}):</p>
+        <div class="detail">
+            <strong>Title:</strong> ${assignment.title}<br>
+            ${assignment.description ? `<strong>Description:</strong> ${assignment.description}<br>` : ''}
+            <strong>Deadline:</strong> ${formatDate(assignment.deadline)} at ${new Date(assignment.deadline).toLocaleTimeString('en-IN')}
+        </div>
+        <p>Make sure to submit your work before the deadline using a Google Drive shareable link.</p>
+        <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/student/assignments" class="btn">View Assignment</a>
+    `;
+
+    await sendEmail({
+        to: student.collegeEmail,
+        subject: `New Assignment: ${assignment.title} — by ${faculty.name}`,
+        html: baseTemplate(html),
+    });
+};
+
+const notifyAssignmentAssigned = async (assignment, students, faculty) => {
+    try {
+        if (students.length === 0) return;
+
+        console.log(`[Assignment Notify] New assignment "${assignment.title}" — notifying ${students.length} student(s)`);
+
+        const BATCH_SIZE = 10;
+        for (let i = 0; i < students.length; i += BATCH_SIZE) {
+            const batch = students.slice(i, i + BATCH_SIZE);
+            const results = await Promise.allSettled(
+                batch.map((s) => sendAssignmentAssignedEmail(s, assignment, faculty))
+            );
+            const failed = results.filter((r) => r.status === 'rejected').length;
+            if (failed > 0) console.warn(`[Assignment Notify] Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${failed}/${batch.length} email(s) failed`);
+        }
+
+        console.log(`[Assignment Notify] Assignment notification sent to ${students.length} student(s)`);
+    } catch (error) {
+        console.error('[Assignment Notify] Failed to notify students:', error.message);
+    }
+};
+
+// --- Assignment Submission Notification (to faculty) ---
+const sendSubmissionNotification = async (faculty, student, assignment, submission) => {
+    try {
+        const html = `
+            <h2>New Assignment Submission</h2>
+            <p>Hi ${faculty.name},</p>
+            <p>A student has submitted their assignment:</p>
+            <div class="detail">
+                <strong>Assignment:</strong> ${assignment.title}<br>
+                <strong>Student:</strong> ${student.name} (${student.rollNumber})<br>
+                <strong>Department:</strong> ${student.department}<br>
+                <strong>Submitted At:</strong> ${formatDate(submission.submittedAt)} at ${new Date(submission.submittedAt).toLocaleTimeString('en-IN')}<br>
+                <strong>Status:</strong> ${submission.status === 'late' ? '<span style="color:#dc2626">Late</span>' : '<span style="color:#059669">On Time</span>'}
+            </div>
+            <div class="detail">
+                <strong>Google Drive Link:</strong><br>
+                <a href="${submission.driveLink}" style="color:#4f46e5; word-break:break-all;">${submission.driveLink}</a>
+            </div>
+            ${submission.comments ? `<div class="detail"><strong>Comments:</strong> ${submission.comments}</div>` : ''}
+            <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/faculty/assignments" class="btn">View All Submissions</a>
+        `;
+
+        await sendEmail({
+            to: faculty.collegeEmail,
+            subject: `Assignment Submission: ${student.name} — ${assignment.title}`,
+            html: baseTemplate(html),
+        });
+    } catch (error) {
+        console.error('[Assignment] Failed to send submission notification:', error.message);
+    }
+};
+
 module.exports = {
     sendWelcomeEmail,
+    sendFacultyWelcomeEmail,
+    sendSubmissionNotification,
+    notifyAssignmentAssigned,
     notifyNewDrive,
     notifyDriveUpdate,
     detectChanges,

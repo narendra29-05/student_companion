@@ -3,7 +3,7 @@ import {
     Container, Typography, Grid, Card, CardContent, CardActions,
     Button, TextField, Dialog, DialogTitle, DialogContent,
     DialogActions, Box, CircularProgress, Alert, Chip, MenuItem,
-    IconButton
+    IconButton, useTheme, useMediaQuery
 } from '@mui/material';
 import { Add, Edit, Delete, Business } from '@mui/icons-material';
 import API from '../services/api';
@@ -30,6 +30,8 @@ const FacultyDashboard = () => {
         expiryDate: ''
     });
     const { user } = useAuth();
+    const muiTheme = useTheme();
+    const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
 
     useEffect(() => {
         fetchDrives();
@@ -130,10 +132,10 @@ const FacultyDashboard = () => {
     }
 
     return (
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Container maxWidth="lg" sx={{ mt: { xs: 2, sm: 4 }, mb: { xs: 2, sm: 4 } }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, mb: 3, flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
                 <Box>
-                    <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#333' }}>
+                    <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#333', fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
                         📋 Manage Placement Drives
                     </Typography>
                     <Typography variant="body1" color="textSecondary">
@@ -143,6 +145,7 @@ const FacultyDashboard = () => {
                 <Button
                     variant="contained"
                     startIcon={<Add />}
+                    fullWidth={isMobile}
                     onClick={() => handleOpenDialog()}
                     sx={{ background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)' }}
                 >
@@ -184,7 +187,7 @@ const FacultyDashboard = () => {
                                     <Typography variant="body2" sx={{ mb: 1 }}>
                                         <strong>Expires:</strong> {formatDate(drive.expiryDate)}
                                     </Typography>
-                                    <Typography variant="body2" noWrap>
+                                    <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
                                         <strong>Link:</strong> {drive.driveLink}
                                     </Typography>
                                 </CardContent>
@@ -203,7 +206,7 @@ const FacultyDashboard = () => {
             )}
 
             {/* Add/Edit Dialog */}
-            <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+            <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth fullScreen={isMobile}>
                 <DialogTitle>{editMode ? 'Edit Drive' : 'Add New Drive'}</DialogTitle>
                 <DialogContent>
                     <TextField

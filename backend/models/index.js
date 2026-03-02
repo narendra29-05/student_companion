@@ -5,6 +5,8 @@ const { Material, MaterialUnit } = require('./Material');
 const Todo = require('./Todo');
 const { Drive, DriveEligibleDepartment } = require('./Drive');
 const DriveApplication = require('./DriveApplication');
+const { Assignment, AssignmentStudent } = require('./Assignment');
+const Submission = require('./Submission');
 
 // Student associations
 Student.hasMany(Todo, { foreignKey: 'studentId', as: 'todos' });
@@ -23,6 +25,20 @@ DriveApplication.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
 
 Drive.hasMany(DriveApplication, { foreignKey: 'driveId', as: 'applications' });
 DriveApplication.belongsTo(Drive, { foreignKey: 'driveId', as: 'drive' });
+
+// Assignment associations
+Faculty.hasMany(Assignment, { foreignKey: 'facultyId', as: 'assignments' });
+Assignment.belongsTo(Faculty, { foreignKey: 'facultyId', as: 'faculty' });
+
+Student.hasMany(AssignmentStudent, { foreignKey: 'studentId', as: 'assignedAssignments' });
+AssignmentStudent.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
+
+// Submission associations
+Student.hasMany(Submission, { foreignKey: 'studentId', as: 'submissions' });
+Submission.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
+
+Assignment.hasMany(Submission, { foreignKey: 'assignmentId', as: 'submissions', onDelete: 'CASCADE' });
+Submission.belongsTo(Assignment, { foreignKey: 'assignmentId', as: 'assignment' });
 
 // Sync all models with database
 const syncDB = async () => {
@@ -46,4 +62,7 @@ module.exports = {
     Drive,
     DriveEligibleDepartment,
     DriveApplication,
+    Assignment,
+    AssignmentStudent,
+    Submission,
 };

@@ -150,15 +150,15 @@ const StudentProfile = () => {
     const completionPct = getCompletionPercentage();
 
     return (
-        <Box sx={{ background: '#f8fafc', minHeight: '100vh', py: 6 }}>
+        <Box sx={{ background: '#f8fafc', minHeight: '100vh', py: { xs: 3, sm: 4, md: 6 } }}>
             <Container maxWidth="md">
                 {/* Profile Header with Avatar */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 4 }}>
+                <Box sx={{ display: 'flex', alignItems: { xs: 'center', sm: 'center' }, gap: { xs: 2, sm: 3 }, mb: 4, flexDirection: { xs: 'column', sm: 'row' }, textAlign: { xs: 'center', sm: 'left' } }}>
                     <Box sx={{ position: 'relative' }}>
                         <Avatar
                             src={profile?.profilePicPath ? `${API_BASE}/${profile.profilePicPath}` : undefined}
                             sx={{
-                                width: 100, height: 100,
+                                width: { xs: 80, sm: 100 }, height: { xs: 80, sm: 100 },
                                 bgcolor: '#6366f1',
                                 fontSize: '2.5rem',
                                 fontWeight: 800,
@@ -185,7 +185,7 @@ const StudentProfile = () => {
                         </IconButton>
                     </Box>
                     <Box>
-                        <Typography variant="h3" sx={{ fontWeight: 900, color: '#1e293b', lineHeight: 1.1 }}>
+                        <Typography variant="h3" sx={{ fontWeight: 900, color: '#1e293b', lineHeight: 1.1, fontSize: { xs: '1.75rem', sm: '2.25rem', md: '3rem' } }}>
                             My <span style={{ color: '#6366f1' }}>Profile</span>
                         </Typography>
                         <Typography variant="body1" sx={{ color: '#64748b', mt: 0.5 }}>
@@ -259,7 +259,7 @@ const StudentProfile = () => {
 
                 {/* Read-Only Info */}
                 <Card sx={{ borderRadius: '16px', border: '1px solid #e2e8f0', mb: 3, boxShadow: 'none' }}>
-                    <CardContent sx={{ p: 3 }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                         <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b', mb: 2 }}>
                             Registration Info
                         </Typography>
@@ -286,7 +286,7 @@ const StudentProfile = () => {
 
                 {/* Editable Fields */}
                 <Card sx={{ borderRadius: '16px', border: '1px solid #e2e8f0', mb: 3, boxShadow: 'none' }}>
-                    <CardContent sx={{ p: 3 }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                         <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b', mb: 2 }}>
                             Personal & Academic Info
                         </Typography>
@@ -334,12 +334,12 @@ const StudentProfile = () => {
 
                 {/* Resume Section */}
                 <Card sx={{ borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: 'none' }}>
-                    <CardContent sx={{ p: 3 }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                         <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b', mb: 2 }}>
                             Resume
                         </Typography>
                         {profile?.resumePath ? (
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, bgcolor: '#f8fafc', borderRadius: '12px' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, bgcolor: '#f8fafc', borderRadius: '12px', flexWrap: 'wrap' }}>
                                 <Description sx={{ color: '#6366f1', fontSize: 40 }} />
                                 <Box sx={{ flexGrow: 1 }}>
                                     <Typography variant="body2" sx={{ fontWeight: 700 }}>Resume uploaded</Typography>

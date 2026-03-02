@@ -13,6 +13,8 @@ import FacultyDashboard from './pages/FacultyDashboard';
 import ResourcePage from './pages/ResourcePage';
 import Materials from './pages/Materials';
 import TodoTracker from './pages/TodoTracker';
+import FacultyAssignments from './pages/FacultyAssignments';
+import StudentAssignments from './pages/StudentAssignments';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRole }) => {
@@ -84,12 +86,29 @@ function AppContent() {
                     }
                 />
 
+                <Route
+                    path="/student/assignments"
+                    element={
+                        <ProtectedRoute allowedRole="student">
+                            <StudentAssignments />
+                        </ProtectedRoute>
+                    }
+                />
+
                 {/* Faculty Routes */}
                 <Route
                     path="/faculty/dashboard"
                     element={
                         <ProtectedRoute allowedRole="faculty">
                             <FacultyDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/faculty/assignments"
+                    element={
+                        <ProtectedRoute allowedRole="faculty">
+                            <FacultyAssignments />
                         </ProtectedRoute>
                     }
                 />

@@ -112,7 +112,7 @@ const StudentDashboard = () => {
     );
 
     return (
-        <Box sx={{ background: '#f8fafc', minHeight: '100vh', py: 6 }}>
+        <Box sx={{ background: '#f8fafc', minHeight: '100vh', py: { xs: 3, sm: 4, md: 6 } }}>
             <Container maxWidth="lg">
                 {/* Profile Completion Banner */}
                 {user?.profileCompleted === false && (
@@ -130,9 +130,9 @@ const StudentDashboard = () => {
                 )}
 
                 {/* Header Section */}
-                <Box sx={{ mb: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                <Box sx={{ mb: { xs: 3, md: 6 }, display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'flex-end' }, flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
                     <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
-                        <Typography variant="h3" sx={{ fontWeight: 900, color: '#1e293b', mb: 1 }}>
+                        <Typography variant="h3" sx={{ fontWeight: 900, color: '#1e293b', mb: 1, fontSize: { xs: '1.75rem', sm: '2.25rem', md: '3rem' } }}>
                             Explore <span style={{ color: '#6366f1' }}>Drives</span>
                         </Typography>
                         <Typography variant="body1" sx={{ color: '#64748b', fontWeight: 500 }}>
@@ -140,7 +140,7 @@ const StudentDashboard = () => {
                         </Typography>
                     </motion.div>
 
-                    <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 2 }}>
                         <Paper elevation={0} sx={{ p: 2, borderRadius: '16px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
                             <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Active</Typography>
                             <Typography variant="h6" sx={{ color: '#6366f1', fontWeight: 800 }}>{drives.length}</Typography>
@@ -156,7 +156,7 @@ const StudentDashboard = () => {
 
                 {/* Drives Grid */}
                 <motion.div variants={containerVariants} initial="hidden" animate="visible">
-                    <Grid container spacing={4}>
+                    <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
                         <AnimatePresence>
                             {drives.map((drive) => {
                                 const daysRemaining = getDaysRemaining(drive.expiryDate);
@@ -181,7 +181,7 @@ const StudentDashboard = () => {
                                                             : 'linear-gradient(90deg, #f59e0b, #fbbf24)'
                                                 }} />
 
-                                                <CardContent sx={{ p: 4 }}>
+                                                <CardContent sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
                                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
                                                         <Avatar sx={{ bgcolor: '#f1f5f9', color: '#6366f1', width: 56, height: 56, borderRadius: '16px' }}>
                                                             <Business fontSize="large" />
@@ -234,19 +234,19 @@ const StudentDashboard = () => {
 
                                                     {/* Bento Info Badges */}
                                                     <Grid container spacing={1} sx={{ mb: 3 }}>
-                                                        <Grid item xs={4}>
+                                                        <Grid item xs={6} sm={4}>
                                                             <Box sx={{ p: 1.5, borderRadius: '12px', bgcolor: '#f8fafc', border: '1px solid #f1f5f9' }}>
                                                                 <Typography variant="caption" sx={{ display: 'block', color: '#94a3b8', fontWeight: 600 }}>Package</Typography>
                                                                 <Typography variant="body2" sx={{ fontWeight: 700 }}>{drive.package || 'TBD'}</Typography>
                                                             </Box>
                                                         </Grid>
-                                                        <Grid item xs={4}>
+                                                        <Grid item xs={6} sm={4}>
                                                             <Box sx={{ p: 1.5, borderRadius: '12px', bgcolor: '#f8fafc', border: '1px solid #f1f5f9' }}>
                                                                 <Typography variant="caption" sx={{ display: 'block', color: '#94a3b8', fontWeight: 600 }}>Min CGPA</Typography>
                                                                 <Typography variant="body2" sx={{ fontWeight: 700 }}>{drive.minCGPA || '0.0'}</Typography>
                                                             </Box>
                                                         </Grid>
-                                                        <Grid item xs={4}>
+                                                        <Grid item xs={6} sm={4}>
                                                             <Box sx={{ p: 1.5, borderRadius: '12px', bgcolor: '#f8fafc', border: '1px solid #f1f5f9' }}>
                                                                 <Typography variant="caption" sx={{ display: 'block', color: '#94a3b8', fontWeight: 600 }}>Max Backlogs</Typography>
                                                                 <Typography variant="body2" sx={{ fontWeight: 700 }}>{drive.maxBacklogs || 0}</Typography>
@@ -305,7 +305,7 @@ const StudentDashboard = () => {
                                                     </Collapse>
                                                 </CardContent>
 
-                                                <Box sx={{ p: 4, pt: 0 }}>
+                                                <Box sx={{ p: { xs: 2.5, sm: 3, md: 4 }, pt: 0 }}>
                                                     <Button
                                                         variant="contained"
                                                         fullWidth

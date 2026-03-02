@@ -98,13 +98,13 @@ const TodoTracker = () => {
         <Box sx={{
             minHeight: '100vh',
             background: theme.bg,
-            py: 10,
+            py: { xs: 4, sm: 6, md: 10 },
             position: 'relative',
             overflow: 'hidden',
             transition: 'background 0.5s ease'
         }}>
             {/* --- TOP RIGHT CONTROLS --- */}
-            <Box sx={{ position: 'absolute', top: 30, right: 30, zIndex: 10 }}>
+            <Box sx={{ position: { xs: 'relative', md: 'absolute' }, top: { md: 30 }, right: { md: 30 }, zIndex: 10, display: 'flex', justifyContent: 'center', mb: { xs: 3, md: 0 } }}>
                 <Stack direction="row" spacing={2} alignItems="center">
                     {/* Task Counter HUD */}
                     <Zoom in={true}>
@@ -150,7 +150,7 @@ const TodoTracker = () => {
                             WORKSPACE_CORE
                         </Typography>
                     </Stack>
-                    <Typography variant="h3" sx={{ fontWeight: 900, color: theme.text, letterSpacing: '-0.04em' }}>
+                    <Typography variant="h3" sx={{ fontWeight: 900, color: theme.text, letterSpacing: '-0.04em', fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}>
                         Task <span style={{ color: '#6366f1' }}>Highlights.</span>
                     </Typography>
                 </Box>
@@ -249,7 +249,7 @@ const TodoTracker = () => {
                                                 : 'linear-gradient(to bottom, #6366f1, #a855f7)'
                                         }} />
 
-                                        <ListItem sx={{ py: 3, px: 4 }}>
+                                        <ListItem sx={{ py: { xs: 2, sm: 3 }, px: { xs: 2, sm: 3, md: 4 } }}>
                                             {/* Toggle Checkbox */}
                                             <Tooltip title={t.isCompleted ? "Mark as pending" : "Mark as done"}>
                                                 <Checkbox
@@ -266,7 +266,7 @@ const TodoTracker = () => {
                                                     ? (isDarkMode ? 'rgba(16, 185, 129, 0.1)' : '#ecfdf5')
                                                     : (isDarkMode ? 'rgba(99, 102, 241, 0.1)' : '#eef2ff'),
                                                 color: t.isCompleted ? '#10b981' : '#6366f1',
-                                                mr: 3, width: 48, height: 48, border: `1px solid ${theme.border}`
+                                                mr: { xs: 1.5, sm: 3 }, width: { xs: 36, sm: 48 }, height: { xs: 36, sm: 48 }, border: `1px solid ${theme.border}`
                                             }}>
                                                 <AssignmentIcon fontSize="small" />
                                             </Avatar>

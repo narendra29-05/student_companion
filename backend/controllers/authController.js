@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const Student = require('../models/Student');
 const Faculty = require('../models/Faculty');
-const { sendWelcomeEmail } = require('../utils/emailService');
+const { sendWelcomeEmail, sendFacultyWelcomeEmail } = require('../utils/emailService');
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -171,6 +171,9 @@ exports.registerFaculty = async (req, res, next) => {
                 role: 'faculty',
             },
         });
+
+        // Fire-and-forget welcome email
+        sendFacultyWelcomeEmail(faculty);
     } catch (error) {
         next(error);
     }

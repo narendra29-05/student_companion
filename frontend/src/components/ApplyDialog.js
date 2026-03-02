@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions, Button, Box, Typography,
-    Chip, IconButton, Tooltip, Divider
+    Chip, IconButton, Tooltip, Divider, useTheme, useMediaQuery
 } from '@mui/material';
 import { ContentCopy, OpenInNew, CheckCircle, Person, Email, School, Badge, TrendingUp } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 
 const ApplyDialog = ({ open, onClose, drive, studentProfile, onApplied }) => {
     const [copied, setCopied] = useState(false);
+    const muiTheme = useTheme();
+    const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
 
     if (!drive || !studentProfile) return null;
 
@@ -38,7 +40,14 @@ const ApplyDialog = ({ open, onClose, drive, studentProfile, onApplied }) => {
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '20px' } }}>
+        <Dialog
+            open={open}
+            onClose={onClose}
+            maxWidth="sm"
+            fullWidth
+            fullScreen={isMobile}
+            PaperProps={{ sx: { borderRadius: isMobile ? 0 : '20px' } }}
+        >
             <DialogTitle sx={{ pb: 1 }}>
                 <Typography variant="h6" sx={{ fontWeight: 800, color: '#1e293b' }}>
                     Apply to {drive.companyName}
@@ -51,11 +60,11 @@ const ApplyDialog = ({ open, onClose, drive, studentProfile, onApplied }) => {
                 <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', display: 'block', mb: 1 }}>
                     Your Details
                 </Typography>
-                <Box sx={{ bgcolor: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0', p: 2 }}>
+                <Box sx={{ bgcolor: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0', p: { xs: 1.5, sm: 2 } }}>
                     {profileFields.map((field, idx) => (
                         <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1, borderBottom: idx < profileFields.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
                             <Box sx={{ color: '#6366f1' }}>{field.icon}</Box>
-                            <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 600, minWidth: 90 }}>{field.label}</Typography>
+                            <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 600, minWidth: { xs: 70, sm: 90 } }}>{field.label}</Typography>
                             <Typography variant="body2" sx={{ fontWeight: 700, color: '#1e293b' }}>{field.value}</Typography>
                         </Box>
                     ))}
@@ -63,7 +72,7 @@ const ApplyDialog = ({ open, onClose, drive, studentProfile, onApplied }) => {
 
                 <Divider sx={{ my: 2 }} />
 
-                <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+                <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', flexDirection: { xs: 'column', sm: 'row' } }}>
                     <Button
                         variant="outlined"
                         startIcon={copied ? <CheckCircle /> : <ContentCopy />}
@@ -72,7 +81,7 @@ const ApplyDialog = ({ open, onClose, drive, studentProfile, onApplied }) => {
                             borderRadius: '12px',
                             textTransform: 'none',
                             fontWeight: 700,
-                            flex: 1,
+                            flex: { sm: 1 },
                             borderColor: copied ? '#10b981' : '#e2e8f0',
                             color: copied ? '#059669' : '#64748b',
                         }}
@@ -87,7 +96,7 @@ const ApplyDialog = ({ open, onClose, drive, studentProfile, onApplied }) => {
                             borderRadius: '12px',
                             textTransform: 'none',
                             fontWeight: 700,
-                            flex: 1,
+                            flex: { sm: 1 },
                             background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
                             boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
                         }}
