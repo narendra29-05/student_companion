@@ -161,7 +161,7 @@ const Home = () => {
             setCycleIndex((p) => (p + 1) % cycleWords.length);
         }, 3500);
         return () => clearInterval(interval);
-    }, []);
+    }, [cycleWords.length, mockupData.length]);
 
     const features = [
         { icon: <BusinessCenterIcon />, title: 'Placement Drives', desc: 'Browse, apply, and track campus placement opportunities. Auto-eligibility checks on CGPA, backlogs, and department.', color: '#6366f1', tag: 'Core' },

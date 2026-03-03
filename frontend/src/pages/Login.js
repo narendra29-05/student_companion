@@ -9,7 +9,6 @@ import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 
 // Icons
-import ShieldMoonIcon from '@mui/icons-material/ShieldMoon';
 import SecurityIcon from '@mui/icons-material/Security';
 import HubIcon from '@mui/icons-material/Hub';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
     Container, Typography, Grid, Card, CardContent,
-    Button, Chip, Box, CircularProgress, Alert, Select, MenuItem,
-    FormControl, InputLabel, Collapse, IconButton, Avatar,
-    Paper, Tooltip
+    Button, Box, CircularProgress, Alert, Select, MenuItem,
+    FormControl, InputLabel, Collapse, Avatar,
+    Paper
 } from '@mui/material';
 import {
     Business, AccessTime, ExpandMore as ExpandMoreIcon,
@@ -101,7 +101,6 @@ const StudentDashboard = () => {
         }
     };
 
-    const formatDate = (date) => new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
     const getDaysRemaining = (expiryDate) => Math.ceil((new Date(expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
 
     if (loading) return (

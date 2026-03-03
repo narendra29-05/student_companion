@@ -4,7 +4,7 @@ import {
   ToggleButton, ToggleButtonGroup, MenuItem, IconButton,
   InputAdornment, Grid, ThemeProvider, createTheme, CssBaseline
 } from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
@@ -12,7 +12,7 @@ import { toast } from 'react-toastify';
 // Icons
 import {
   Brightness4, Brightness7, Visibility, VisibilityOff,
-  MenuBook, LaptopMac, Psychology,
+  MenuBook, Psychology,
   EmojiEvents, School, Terminal, Engineering, WorkspacePremium,
   Biotech, Science, Code,
   Hub, Speed
