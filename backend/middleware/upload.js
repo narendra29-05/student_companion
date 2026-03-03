@@ -1,20 +1,20 @@
 const multer = require('multer');
-const path = require('path');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('../config/cloudinary');
 
-// Resume upload config
-const resumeStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, '../uploads/resumes'));
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        cb(null, `${req.student.id}_${Date.now()}${ext}`);
+// Resume upload config — stored as raw files in Cloudinary
+const resumeStorage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+        folder: 'student_companion/resumes',
+        resource_type: 'raw',
+        allowed_formats: ['pdf', 'doc', 'docx'],
     },
 });
 
 const resumeFilter = (req, file, cb) => {
     const allowed = ['.pdf', '.doc', '.docx'];
-    const ext = path.extname(file.originalname).toLowerCase();
+    const ext = '.' + file.originalname.split('.').pop().toLowerCase();
     if (allowed.includes(ext)) {
         cb(null, true);
     } else {
@@ -28,20 +28,20 @@ const uploadResume = multer({
     limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-// Profile picture upload config
-const profilePicStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, '../uploads/profilepics'));
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        cb(null, `${req.student.id}_${Date.now()}${ext}`);
+// Profile picture upload config — stored as images in Cloudinary
+const profilePicStorage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+        folder: 'student_companion/profilepics',
+        resource_type: 'image',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+        transformation: [{ width: 400, height: 400, crop: 'limit', quality: 'auto' }],
     },
 });
 
 const profilePicFilter = (req, file, cb) => {
     const allowed = ['.jpg', '.jpeg', '.png', '.webp'];
-    const ext = path.extname(file.originalname).toLowerCase();
+    const ext = '.' + file.originalname.split('.').pop().toLowerCase();
     if (allowed.includes(ext)) {
         cb(null, true);
     } else {
@@ -52,7 +52,7 @@ const profilePicFilter = (req, file, cb) => {
 const uploadProfilePic = multer({
     storage: profilePicStorage,
     fileFilter: profilePicFilter,
-    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+    limits: { fileSize: 2 * 1024 * 1024 },
 });
 
 module.exports = { uploadResume, uploadProfilePic };

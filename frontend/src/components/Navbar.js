@@ -17,8 +17,14 @@ import EventNoteIcon from '@mui/icons-material/EventNote';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import NotificationBell from './NotificationBell';
 
 const API_BASE = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5001';
+
+const resolveUrl = (path) => {
+    if (!path) return undefined;
+    return path.startsWith('http') ? path : `${API_BASE}/${path}`;
+};
 
 /* Animated nav pill button */
 const NavPill = ({ label, icon, active, onClick, delay }) => (
@@ -306,7 +312,7 @@ const Navbar = () => {
                                         <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)', mb: 2 }} />
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                             <Avatar
-                                                src={user.profilePicPath ? `${API_BASE}/${user.profilePicPath}` : undefined}
+                                                src={resolveUrl(user.profilePicPath)}
                                                 sx={{
                                                     width: 36, height: 36,
                                                     bgcolor: '#4f46e5',
@@ -352,6 +358,7 @@ const Navbar = () => {
                             transition={{ delay: 0.3, duration: 0.4, type: 'spring' }}
                         >
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <NotificationBell />
                                 <Typography variant="body2" sx={{
                                     color: 'rgba(255,255,255,0.75)', fontWeight: 600, fontSize: '0.85rem',
                                     display: { xs: 'none', sm: 'block' },
@@ -368,7 +375,7 @@ const Navbar = () => {
                                             display: 'flex',
                                         }}>
                                             <Avatar
-                                                src={user.profilePicPath ? `${API_BASE}/${user.profilePicPath}` : undefined}
+                                                src={resolveUrl(user.profilePicPath)}
                                                 sx={{
                                                     width: 36, height: 36,
                                                     bgcolor: '#2d1560',

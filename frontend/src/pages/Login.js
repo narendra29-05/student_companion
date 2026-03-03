@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { 
-    Container, Typography, TextField, Button, Box, 
-    ToggleButton, ToggleButtonGroup, Alert, Paper, Grid, Avatar, Chip, Stack, IconButton
+import {
+    Container, Typography, TextField, Button, Box,
+    ToggleButton, ToggleButtonGroup, Alert, Paper, Grid, Avatar, Chip, Stack, IconButton,
+    InputAdornment
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +15,8 @@ import HubIcon from '@mui/icons-material/Hub';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 const Login = () => {
     const [role, setRole] = useState('student');
@@ -21,6 +24,7 @@ const Login = () => {
     const [formData, setFormData] = useState({ identifier: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPwd, setShowPwd] = useState(false);
 
     const { login } = useAuth();
     const navigate = useNavigate();
@@ -244,17 +248,24 @@ const Login = () => {
                                             InputLabelProps={{ sx: { color: theme.subText, '&.Mui-focused': { color: theme.text } } }}
                                         />
                                         <TextField
-                                            fullWidth label="Secret Password" type="password"
+                                            fullWidth label="Secret Password" type={showPwd ? 'text' : 'password'}
                                             variant="filled"
                                             value={formData.password}
                                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                            InputProps={{ 
-                                                disableUnderline: true, 
-                                                sx: { 
+                                            InputProps={{
+                                                disableUnderline: true,
+                                                sx: {
                                                     borderRadius: '16px', background: theme.inputBg, color: theme.text,
                                                     border: `1px solid ${theme.glassBorder}`, transition: '0.3s',
                                                     '&.Mui-focused': { border: `1px solid ${roleContent[role].color}` }
-                                                } 
+                                                },
+                                                endAdornment: (
+                                                    <InputAdornment position="end">
+                                                        <IconButton onClick={() => setShowPwd(!showPwd)} edge="end" sx={{ color: theme.subText }}>
+                                                            {showPwd ? <VisibilityOff /> : <Visibility />}
+                                                        </IconButton>
+                                                    </InputAdornment>
+                                                ),
                                             }}
                                             InputLabelProps={{ sx: { color: theme.subText, '&.Mui-focused': { color: theme.text } } }}
                                         />

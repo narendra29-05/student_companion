@@ -1,6 +1,14 @@
-const fs = require('fs');
-const path = require('path');
+const cloudinary = require('../config/cloudinary');
 const Student = require('../models/Student');
+
+// Extract Cloudinary public_id from a full URL
+const getPublicId = (url) => {
+    if (!url) return null;
+    // Cloudinary URLs: https://res.cloudinary.com/<cloud>/image/upload/v123/folder/file.ext
+    // or for raw: https://res.cloudinary.com/<cloud>/raw/upload/v123/folder/file.ext
+    const match = url.match(/\/upload\/(?:v\d+\/)?(.+?)(?:\.\w+)?$/);
+    return match ? match[1] : null;
+};
 
 const buildProfileResponse = (student) => ({
     id: student.id,
@@ -71,12 +79,16 @@ exports.uploadResume = async (req, res, next) => {
 
         const student = await Student.findByPk(req.student.id);
 
+        // Delete old resume from Cloudinary
         if (student.resumePath) {
-            const oldPath = path.join(__dirname, '..', student.resumePath);
-            if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+            const publicId = getPublicId(student.resumePath);
+            if (publicId) {
+                await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' }).catch(() => {});
+            }
         }
 
-        const resumePath = `uploads/resumes/${req.file.filename}`;
+        // req.file.path is the full Cloudinary URL
+        const resumePath = req.file.path;
         await student.update({ resumePath });
 
         res.status(200).json({ success: true, message: 'Resume uploaded successfully!', resumePath });
@@ -95,8 +107,10 @@ exports.deleteResume = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'No resume to delete' });
         }
 
-        const filePath = path.join(__dirname, '..', student.resumePath);
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        const publicId = getPublicId(student.resumePath);
+        if (publicId) {
+            await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' }).catch(() => {});
+        }
 
         await student.update({ resumePath: null });
         res.status(200).json({ success: true, message: 'Resume deleted successfully!' });
@@ -115,12 +129,16 @@ exports.uploadProfilePic = async (req, res, next) => {
 
         const student = await Student.findByPk(req.student.id);
 
+        // Delete old picture from Cloudinary
         if (student.profilePicPath) {
-            const oldPath = path.join(__dirname, '..', student.profilePicPath);
-            if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+            const publicId = getPublicId(student.profilePicPath);
+            if (publicId) {
+                await cloudinary.uploader.destroy(publicId, { resource_type: 'image' }).catch(() => {});
+            }
         }
 
-        const profilePicPath = `uploads/profilepics/${req.file.filename}`;
+        // req.file.path is the full Cloudinary URL
+        const profilePicPath = req.file.path;
         await student.update({ profilePicPath });
 
         res.status(200).json({ success: true, message: 'Profile picture uploaded!', profilePicPath });
@@ -139,8 +157,10 @@ exports.deleteProfilePic = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'No profile picture to delete' });
         }
 
-        const filePath = path.join(__dirname, '..', student.profilePicPath);
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        const publicId = getPublicId(student.profilePicPath);
+        if (publicId) {
+            await cloudinary.uploader.destroy(publicId, { resource_type: 'image' }).catch(() => {});
+        }
 
         await student.update({ profilePicPath: null });
         res.status(200).json({ success: true, message: 'Profile picture deleted!' });

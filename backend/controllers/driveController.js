@@ -87,8 +87,6 @@ exports.getActiveDrivesStudent = async (req, res, next) => {
                 {
                     model: DriveEligibleDepartment,
                     as: 'eligibleDepartments',
-                    where: { department: studentDept },
-                    required: false,
                 },
                 {
                     model: Faculty,
@@ -99,10 +97,12 @@ exports.getActiveDrivesStudent = async (req, res, next) => {
             order: [['createdAt', 'DESC']],
         });
 
-        // Filter: show drives that have no dept restriction OR include student's dept
+        // Filter: show drives that have no dept restriction, include 'ALL', or include student's dept
         const filtered = drives.filter((d) => {
-            return d.eligibleDepartments.length === 0 ||
-                d.eligibleDepartments.some((ed) => ed.department === studentDept);
+            if (d.eligibleDepartments.length === 0) return true;
+            return d.eligibleDepartments.some(
+                (ed) => ed.department === studentDept || ed.department === 'ALL'
+            );
         });
 
         // Fetch student's applications

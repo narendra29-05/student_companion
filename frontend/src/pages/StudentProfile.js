@@ -13,6 +13,12 @@ import { useAuth } from '../context/AuthContext';
 
 const API_BASE = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5001';
 
+// If the path is already a full URL (Cloudinary), use it directly; otherwise prepend API_BASE
+const resolveUrl = (path) => {
+    if (!path) return undefined;
+    return path.startsWith('http') ? path : `${API_BASE}/${path}`;
+};
+
 const StudentProfile = () => {
     const { updateUser } = useAuth();
     const [profile, setProfile] = useState(null);
@@ -156,7 +162,7 @@ const StudentProfile = () => {
                 <Box sx={{ display: 'flex', alignItems: { xs: 'center', sm: 'center' }, gap: { xs: 2, sm: 3 }, mb: 4, flexDirection: { xs: 'column', sm: 'row' }, textAlign: { xs: 'center', sm: 'left' } }}>
                     <Box sx={{ position: 'relative' }}>
                         <Avatar
-                            src={profile?.profilePicPath ? `${API_BASE}/${profile.profilePicPath}` : undefined}
+                            src={resolveUrl(profile?.profilePicPath)}
                             sx={{
                                 width: { xs: 80, sm: 100 }, height: { xs: 80, sm: 100 },
                                 bgcolor: '#6366f1',
@@ -348,7 +354,7 @@ const StudentProfile = () => {
                                     </Typography>
                                 </Box>
                                 <Button size="small" variant="outlined"
-                                    href={`${API_BASE}/${profile.resumePath}`} target="_blank"
+                                    href={resolveUrl(profile.resumePath)} target="_blank"
                                     sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 600, mr: 1 }}>
                                     View
                                 </Button>

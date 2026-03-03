@@ -49,6 +49,7 @@ app.use('/api/student', require('./routes/studentRoutes'));
 app.use('/api/todos', require('./routes/todoRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 app.use('/api/assignments', require('./routes/assignmentRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -71,6 +72,14 @@ const start = async () => {
     await syncDB();
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
+
+        // Warn if email env vars are missing
+        const emailVars = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_USER', 'EMAIL_PASS', 'EMAIL_FROM'];
+        const missing = emailVars.filter((v) => !process.env[v]);
+        if (missing.length > 0) {
+            console.warn(`⚠️  Missing email env vars: ${missing.join(', ')} — email notifications will fail`);
+        }
+
         startDeadlineReminderCron();
     });
 };

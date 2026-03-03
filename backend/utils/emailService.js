@@ -3,6 +3,7 @@ const cron = require('node-cron');
 const { Op } = require('sequelize');
 const Student = require('../models/Student');
 const { Drive, DriveEligibleDepartment } = require('../models/Drive');
+const { createNotification, createBulkNotifications } = require('./notificationService');
 
 let transporter = null;
 
@@ -292,6 +293,17 @@ const notifyNewDrive = async (drive, departments) => {
         }
 
         console.log(`[Drive Notify] New drive notification sent to ${students.length} student(s)`);
+
+        // In-app notifications
+        const notifications = students.map((s) => ({
+            userId: s.id,
+            userType: 'student',
+            type: 'new_drive',
+            title: `New Drive: ${drive.companyName}`,
+            message: `${drive.companyName} is hiring for ${drive.role}. ${drive.package ? `Package: ${drive.package}. ` : ''}Apply before ${formatDate(drive.expiryDate)}.`,
+            relatedId: drive.id,
+        }));
+        await createBulkNotifications(notifications);
     } catch (error) {
         console.error('[Drive Notify] Failed to notify students (new drive):', error.message);
     }
@@ -332,6 +344,18 @@ const notifyDriveUpdate = async (drive, departments, changes) => {
         }
 
         console.log(`[Drive Notify] Drive update notification sent to ${students.length} student(s)`);
+
+        // In-app notifications
+        const changesSummary = changes.map((c) => c.label).join(', ');
+        const notifications = students.map((s) => ({
+            userId: s.id,
+            userType: 'student',
+            type: 'drive_updated',
+            title: `Drive Updated: ${drive.companyName}`,
+            message: `${drive.companyName} — ${drive.role} has been updated. Changes: ${changesSummary}.`,
+            relatedId: drive.id,
+        }));
+        await createBulkNotifications(notifications);
     } catch (error) {
         console.error('[Drive Notify] Failed to notify students (drive update):', error.message);
     }
@@ -380,6 +404,17 @@ const startDeadlineReminderCron = () => {
                         batch.map((s) => sendDeadlineReminderEmail(s, drive))
                     );
                 }
+
+                // In-app notifications for deadline
+                const deadlineNotifs = students.map((s) => ({
+                    userId: s.id,
+                    userType: 'student',
+                    type: 'deadline_reminder',
+                    title: `Last Day: ${drive.companyName}`,
+                    message: `Today is the last day to apply for ${drive.companyName} — ${drive.role}. Don't miss out!`,
+                    relatedId: drive.id,
+                }));
+                await createBulkNotifications(deadlineNotifs);
 
                 console.log(`Deadline reminder sent for "${drive.companyName}" to ${students.length} student(s)`);
             }
@@ -430,6 +465,17 @@ const notifyAssignmentAssigned = async (assignment, students, faculty) => {
         }
 
         console.log(`[Assignment Notify] Assignment notification sent to ${students.length} student(s)`);
+
+        // In-app notifications
+        const notifications = students.map((s) => ({
+            userId: s.id,
+            userType: 'student',
+            type: 'assignment_created',
+            title: `New Assignment: ${assignment.title}`,
+            message: `${faculty.name} assigned "${assignment.title}". Deadline: ${formatDate(assignment.deadline)}.`,
+            relatedId: assignment.id,
+        }));
+        await createBulkNotifications(notifications);
     } catch (error) {
         console.error('[Assignment Notify] Failed to notify students:', error.message);
     }
@@ -461,6 +507,16 @@ const sendSubmissionNotification = async (faculty, student, assignment, submissi
             to: faculty.collegeEmail,
             subject: `Assignment Submission: ${student.name} — ${assignment.title}`,
             html: baseTemplate(html),
+        });
+
+        // In-app notification for faculty
+        await createNotification({
+            userId: faculty.id,
+            userType: 'faculty',
+            type: 'assignment_submitted',
+            title: `Submission: ${assignment.title}`,
+            message: `${student.name} (${student.rollNumber}) submitted "${assignment.title}" — ${submission.status === 'late' ? 'Late' : 'On Time'}.`,
+            relatedId: assignment.id,
         });
     } catch (error) {
         console.error('[Assignment] Failed to send submission notification:', error.message);

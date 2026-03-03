@@ -7,6 +7,7 @@ const { Drive, DriveEligibleDepartment } = require('./Drive');
 const DriveApplication = require('./DriveApplication');
 const { Assignment, AssignmentStudent } = require('./Assignment');
 const Submission = require('./Submission');
+const Notification = require('./Notification');
 
 // Student associations
 Student.hasMany(Todo, { foreignKey: 'studentId', as: 'todos' });
@@ -65,4 +66,5 @@ module.exports = {
     Assignment,
     AssignmentStudent,
     Submission,
+    Notification,
 };
