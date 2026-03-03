@@ -15,6 +15,12 @@ exports.createDrive = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'Company name, role, drive link, and expiry date are required' });
         }
 
+        // Check for duplicate drive link
+        const existingDrive = await Drive.findOne({ where: { driveLink } });
+        if (existingDrive) {
+            return res.status(409).json({ success: false, message: 'A drive with this link already exists. Please use a different link.' });
+        }
+
         const drive = await Drive.create({
             companyName,
             role,
@@ -239,6 +245,14 @@ exports.updateDrive = async (req, res, next) => {
         }
 
         const { companyName, role, driveLink, description, eligibleDepartments, minCGPA, maxBacklogs, package: salary, expiryDate, isActive } = req.body;
+
+        // Check for duplicate drive link (if link is being changed)
+        if (driveLink && driveLink !== drive.driveLink) {
+            const existingDrive = await Drive.findOne({ where: { driveLink } });
+            if (existingDrive) {
+                return res.status(409).json({ success: false, message: 'A drive with this link already exists.' });
+            }
+        }
 
         // Snapshot old values before updating
         const oldValues = {

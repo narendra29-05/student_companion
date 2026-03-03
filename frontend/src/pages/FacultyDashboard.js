@@ -18,6 +18,7 @@ const FacultyDashboard = () => {
     const [openDialog, setOpenDialog] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [currentDrive, setCurrentDrive] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         companyName: '',
         role: '',
@@ -85,9 +86,12 @@ const FacultyDashboard = () => {
         setOpenDialog(false);
         setEditMode(false);
         setCurrentDrive(null);
+        setSubmitting(false);
     };
 
     const handleSubmit = async () => {
+        if (submitting) return;
+        setSubmitting(true);
         try {
             if (editMode) {
                 await API.put(`/drives/${currentDrive.id}`, formData);
@@ -100,6 +104,8 @@ const FacultyDashboard = () => {
             fetchDrives();
         } catch (err) {
             toast.error(err.response?.data?.message || 'Operation failed');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -292,13 +298,14 @@ const FacultyDashboard = () => {
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCloseDialog}>Cancel</Button>
-                    <Button 
-                        onClick={handleSubmit} 
+                    <Button onClick={handleCloseDialog} disabled={submitting}>Cancel</Button>
+                    <Button
+                        onClick={handleSubmit}
                         variant="contained"
+                        disabled={submitting}
                         sx={{ background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)' }}
                     >
-                        {editMode ? 'Update' : 'Create'}
+                        {submitting ? (editMode ? 'Updating...' : 'Creating...') : (editMode ? 'Update' : 'Create')}
                     </Button>
                 </DialogActions>
             </Dialog>

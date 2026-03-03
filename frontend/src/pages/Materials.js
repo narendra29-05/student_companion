@@ -330,6 +330,17 @@ const Materials = () => {
                                 </Grid>
                             </Grid>
                         </motion.div>
+                    ) : !loading && selection.regulation && availableSemesters.length === 0 ? (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                            <Box sx={{ textAlign: 'center', py: 10, bgcolor: '#fff', borderRadius: '32px', border: '2px dashed #e2e8f0' }}>
+                                <Typography variant="h6" sx={{ color: '#94a3b8', fontWeight: 600 }}>
+                                    No materials found for {selection.regulation} regulation.
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: '#cbd5e1', mt: 1 }}>
+                                    Materials may not have been uploaded yet. Contact your faculty.
+                                </Typography>
+                            </Box>
+                        </motion.div>
                     ) : !loading && (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                             <Box sx={{ textAlign: 'center', py: 10, bgcolor: '#fff', borderRadius: '32px', border: '2px dashed #e2e8f0' }}>
