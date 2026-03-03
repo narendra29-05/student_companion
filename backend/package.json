@@ -18,7 +18,8 @@
     "node-cron": "^4.2.1",
     "nodemailer": "^8.0.1",
     "sequelize": "^6.37.7",
-    "tedious": "^19.2.1"
+    "pg": "^8.13.1",
+    "pg-hstore": "^2.3.4"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
