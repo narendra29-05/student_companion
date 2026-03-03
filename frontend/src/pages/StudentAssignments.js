@@ -11,7 +11,6 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import API from '../services/api';
-import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 
 const containerVariants = {
@@ -83,7 +82,6 @@ const StudentAssignments = () => {
     const [linkError, setLinkError] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [submitSuccess, setSubmitSuccess] = useState(false);
-    const { user } = useAuth();
     const muiTheme = useTheme();
     const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
 
@@ -203,7 +201,6 @@ const StudentAssignments = () => {
                         {assignments.map((a) => {
                             const statusInfo = getStatusColor(a.submissionStatus);
                             const borderColor = getCardBorderColor(a.submissionStatus, a.isPastDeadline);
-                            const canSubmit = !a.isPastDeadline || !a.submission;
                             const canEdit = a.submission && !a.isPastDeadline;
 
                             return (

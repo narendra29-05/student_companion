@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import {
     Business, AccessTime, ExpandMore as ExpandMoreIcon,
-    CheckCircle, Cancel, Warning
+    CheckCircle
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -102,7 +102,6 @@ const StudentDashboard = () => {
     };
 
     const formatDate = (date) => new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-    const getDaysRemaining = (expiryDate) => Math.ceil((new Date(expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
 
     if (loading) return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh' }}>

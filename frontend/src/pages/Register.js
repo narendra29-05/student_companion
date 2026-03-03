@@ -10,13 +10,12 @@ import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 
 // Icons
-import { 
+import {
   Brightness4, Brightness7, Visibility, VisibilityOff,
-  MenuBook, LaptopMac, Psychology, Analytics, 
-  EmojiEvents, TipsAndUpdates, Security, VerifiedUser,
-  AutoGraph, School, Terminal, Engineering, WorkspacePremium,
-  Calculate, Language, Biotech, Science, Architecture, Code,
-  Hub, Memory, Storage, Speed, BugReport
+  MenuBook, LaptopMac, Psychology,
+  EmojiEvents, School, Terminal, Engineering, WorkspacePremium,
+  Biotech, Science, Code,
+  Hub, Speed
 } from '@mui/icons-material';
 
 const DEPARTMENTS = ['CSE', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT', 'AIDS', 'AIML'];
