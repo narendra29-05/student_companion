@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions, Button, Box, Typography,
-    Chip, IconButton, Tooltip, Divider, useTheme, useMediaQuery
+    Divider, useTheme, useMediaQuery
 } from '@mui/material';
 import { ContentCopy, OpenInNew, CheckCircle, Person, Email, School, Badge, TrendingUp } from '@mui/icons-material';
 import { toast } from 'react-toastify';
