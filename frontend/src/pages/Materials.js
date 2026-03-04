@@ -252,7 +252,11 @@ const Materials = () => {
 
                                     <Paper sx={{ borderRadius: '32px', overflow: 'hidden', border: '1px solid #e2e8f0', background: '#fff' }}>
                                         <List sx={{ p: 0 }}>
-                                            {selectedMaterial.units.map((unit, index) => (
+                                            {[...selectedMaterial.units].sort((a, b) => {
+                                                const numA = parseInt(a.name.match(/\d+/)?.[0]) || 0;
+                                                const numB = parseInt(b.name.match(/\d+/)?.[0]) || 0;
+                                                return numA - numB;
+                                            }).map((unit, index) => (
                                                 <motion.div key={index} variants={itemVariants}>
                                                     <ListItem sx={{
                                                         py: 4, px: 5, transition: '0.3s',

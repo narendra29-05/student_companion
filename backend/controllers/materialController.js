@@ -11,7 +11,11 @@ exports.getMaterialsByFilter = async (req, res, next) => {
         const materials = await Material.findAll({
             where,
             include: [{ model: MaterialUnit, as: 'units' }],
-            order: [['subject', 'ASC']],
+            order: [
+                ['semester', 'ASC'],
+                ['subject', 'ASC'],
+                [{ model: MaterialUnit, as: 'units' }, 'id', 'ASC'],
+            ],
         });
 
         res.status(200).json({ success: true, materials });
