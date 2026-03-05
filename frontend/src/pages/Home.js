@@ -217,26 +217,38 @@ const Home = () => {
             <Box sx={{
                 position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                px: { xs: 2, md: 4 }, py: { xs: 1.2, md: 1.5 },
-                background: isDarkMode ? 'rgba(2,6,23,0.8)' : 'rgba(255,255,255,0.85)',
+                px: { xs: 1.5, md: 4 }, py: { xs: 1, md: 1.5 },
+                background: isDarkMode ? 'rgba(2,6,23,0.85)' : 'rgba(255,255,255,0.9)',
                 backdropFilter: 'blur(20px)',
                 borderBottom: `1px solid ${t.border}`,
             }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <SchoolIcon sx={{ color: '#6366f1', fontSize: { xs: 22, md: 28 } }} />
-                    <Typography sx={{ fontWeight: 900, color: t.tx, fontSize: { xs: '0.95rem', md: '1.1rem' }, letterSpacing: '-0.01em' }}>
+                <Box
+                    onClick={() => setIsDarkMode(!isDarkMode)}
+                    sx={{
+                        display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer',
+                        userSelect: 'none',
+                        '&:active': { opacity: 0.7 },
+                    }}
+                >
+                    <Box sx={{
+                        width: 32, height: 32, borderRadius: '10px',
+                        background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(99,102,241,0.1)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'all 0.3s',
+                    }}>
+                        {isDarkMode
+                            ? <DarkModeIcon sx={{ color: '#818cf8', fontSize: 18 }} />
+                            : <LightModeIcon sx={{ color: '#6366f1', fontSize: 18 }} />
+                        }
+                    </Box>
+                    <Typography sx={{ fontWeight: 900, color: t.tx, fontSize: { xs: '0.9rem', md: '1.1rem' }, letterSpacing: '-0.01em' }}>
                         Student Companion
                     </Typography>
                 </Box>
-                <Stack direction="row" spacing={1} alignItems="center">
-                    <IconButton onClick={() => setIsDarkMode(!isDarkMode)} size="small" sx={{
-                        color: isDarkMode ? '#fbbf24' : '#6366f1',
-                    }}>
-                        {isDarkMode ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
-                    </IconButton>
+                <Stack direction="row" spacing={{ xs: 0.5, md: 1 }} alignItems="center">
                     <Button onClick={() => navigate('/login')} size="small" sx={{
                         color: t.tx, fontWeight: 700, textTransform: 'none', fontSize: '0.85rem',
-                        borderRadius: '10px', px: { xs: 1.5, md: 2 },
+                        borderRadius: '10px', px: { xs: 1.5, md: 2 }, minWidth: 'auto',
                     }}>Login</Button>
                     <Button onClick={() => navigate('/register')} size="small" variant="contained" sx={{
                         fontWeight: 800, textTransform: 'none', fontSize: '0.85rem',

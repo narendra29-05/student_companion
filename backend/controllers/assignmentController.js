@@ -71,7 +71,7 @@ exports.createAssignment = async (req, res, next) => {
         const fullStudents = await Student.findAll({
             where: { id: students.map((s) => s.id) },
         });
-        notifyAssignmentAssigned(assignment, fullStudents, req.faculty);
+        notifyAssignmentAssigned(assignment, fullStudents, req.faculty).catch(err => console.error('[Email] Assignment notification failed:', err.message));
     } catch (error) {
         next(error);
     }
@@ -317,7 +317,7 @@ exports.submitAssignment = async (req, res, next) => {
                 comments,
                 submittedAt: new Date(),
                 status,
-            });
+            }).catch(err => console.error('[Email] Submission notification failed:', err.message));
         }
     } catch (error) {
         next(error);

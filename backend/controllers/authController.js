@@ -67,7 +67,7 @@ exports.registerStudent = async (req, res, next) => {
         });
 
         // Fire-and-forget welcome email
-        sendWelcomeEmail(student);
+        sendWelcomeEmail(student).catch(err => console.error('[Email] Welcome email failed:', err.message));
     } catch (error) {
         next(error);
     }
@@ -173,7 +173,7 @@ exports.registerFaculty = async (req, res, next) => {
         });
 
         // Fire-and-forget welcome email
-        sendFacultyWelcomeEmail(faculty);
+        sendFacultyWelcomeEmail(faculty).catch(err => console.error('[Email] Faculty welcome email failed:', err.message));
     } catch (error) {
         next(error);
     }

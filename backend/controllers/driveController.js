@@ -55,7 +55,7 @@ exports.createDrive = async (req, res, next) => {
         // Fire-and-forget email notification to eligible students
         const departments = eligibleDepartments && eligibleDepartments.length > 0
             ? eligibleDepartments : [];
-        notifyNewDrive(drive, departments);
+        notifyNewDrive(drive, departments).catch(err => console.error('[Email] Drive notification failed:', err.message));
     } catch (error) {
         next(error);
     }
@@ -303,7 +303,7 @@ exports.updateDrive = async (req, res, next) => {
         // Fire-and-forget: detect what changed and notify students
         const changes = detectChanges(oldValues, drive.toJSON());
         const currentDepts = result.eligibleDepartments.map((ed) => ed.department);
-        notifyDriveUpdate(drive, currentDepts, changes);
+        notifyDriveUpdate(drive, currentDepts, changes).catch(err => console.error('[Email] Drive update notification failed:', err.message));
     } catch (error) {
         next(error);
     }
