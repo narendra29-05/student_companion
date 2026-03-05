@@ -210,7 +210,8 @@ const Navbar = () => {
                                 whiteSpace: 'nowrap',
                             }}
                         >
-                            {isMobile ? 'Student Companion' : 'Student Companion'}
+                            Student Companion
+                        </Typography>
                     </Box>
                 </motion.div>
 

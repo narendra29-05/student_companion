@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -31,10 +31,18 @@ const ProtectedRoute = ({ children, allowedRole }) => {
     return children;
 };
 
+// Conditionally render Navbar
+const ConditionalNavbar = () => {
+    const location = useLocation();
+    const hideOn = ['/', '/login', '/register'];
+    if (hideOn.includes(location.pathname)) return null;
+    return <Navbar />;
+};
+
 function AppContent() {
     return (
         <Router>
-            <Navbar />
+            <ConditionalNavbar />
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />

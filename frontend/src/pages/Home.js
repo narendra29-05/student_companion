@@ -211,22 +211,43 @@ const Home = () => {
     );
 
     return (
-        <Box sx={{ background: t.bg, transition: 'background 0.5s ease' }}>
+        <Box sx={{ background: t.bg, transition: 'background 0.5s ease', overflowX: 'hidden' }}>
 
-            {/* Fixed theme toggle */}
-            <Box sx={{ position: 'fixed', top: { xs: 60, md: 80 }, right: { xs: 12, md: 24 }, zIndex: 100 }}>
-                <IconButton onClick={() => setIsDarkMode(!isDarkMode)} sx={{
-                    bgcolor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
-                    border: `1px solid ${t.border}`, backdropFilter: 'blur(10px)',
-                    color: isDarkMode ? '#fbbf24' : '#6366f1',
-                    '&:hover': { bgcolor: isDarkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)' }
-                }}>
-                    {isDarkMode ? <LightModeIcon /> : <DarkModeIcon />}
-                </IconButton>
+            {/* Fixed top nav bar */}
+            <Box sx={{
+                position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                px: { xs: 2, md: 4 }, py: { xs: 1.2, md: 1.5 },
+                background: isDarkMode ? 'rgba(2,6,23,0.8)' : 'rgba(255,255,255,0.85)',
+                backdropFilter: 'blur(20px)',
+                borderBottom: `1px solid ${t.border}`,
+            }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <SchoolIcon sx={{ color: '#6366f1', fontSize: { xs: 22, md: 28 } }} />
+                    <Typography sx={{ fontWeight: 900, color: t.tx, fontSize: { xs: '0.95rem', md: '1.1rem' }, letterSpacing: '-0.01em' }}>
+                        Student Companion
+                    </Typography>
+                </Box>
+                <Stack direction="row" spacing={1} alignItems="center">
+                    <IconButton onClick={() => setIsDarkMode(!isDarkMode)} size="small" sx={{
+                        color: isDarkMode ? '#fbbf24' : '#6366f1',
+                    }}>
+                        {isDarkMode ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
+                    </IconButton>
+                    <Button onClick={() => navigate('/login')} size="small" sx={{
+                        color: t.tx, fontWeight: 700, textTransform: 'none', fontSize: '0.85rem',
+                        borderRadius: '10px', px: { xs: 1.5, md: 2 },
+                    }}>Login</Button>
+                    <Button onClick={() => navigate('/register')} size="small" variant="contained" sx={{
+                        fontWeight: 800, textTransform: 'none', fontSize: '0.85rem',
+                        borderRadius: '10px', px: { xs: 1.5, md: 2 },
+                        background: '#4f46e5', '&:hover': { background: '#4338ca' },
+                    }}>Register</Button>
+                </Stack>
             </Box>
 
             {/* ═══════ HERO ═══════ */}
-            <Box sx={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ minHeight: '100dvh', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', pt: { xs: 7, md: 8 } }}>
                 <motion.div animate={{ scale: [1, 1.3, 1], opacity: isDarkMode ? 0.15 : 0.08 }} transition={{ duration: 15, repeat: Infinity }}
                     style={{ position: 'absolute', top: '10%', left: '0%', width: 700, height: 700, background: 'radial-gradient(circle, #6366f1 0%, transparent 75%)', filter: 'blur(100px)', zIndex: 0 }} />
 
