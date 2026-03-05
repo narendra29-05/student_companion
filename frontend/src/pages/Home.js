@@ -60,7 +60,7 @@ const StatCounter = ({ end, suffix, label, icon, color, theme }) => {
                 <Avatar sx={{ bgcolor: `${color}15`, width: 64, height: 64, mx: 'auto', mb: 2.5 }}>
                     {React.cloneElement(icon, { sx: { color, fontSize: 32 } })}
                 </Avatar>
-                <Typography sx={{ fontWeight: 900, color: theme.textMain, fontSize: { xs: '2.5rem', md: '3.5rem' }, lineHeight: 1, mb: 0.5 }}>
+                <Typography sx={{ fontWeight: 900, color: theme.textMain, fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3.5rem' }, lineHeight: 1, mb: 0.5 }}>
                     {count}{suffix}
                 </Typography>
                 <Typography variant="body1" sx={{ color: theme.textSub, fontWeight: 600, fontSize: '0.95rem' }}>{label}</Typography>
@@ -202,7 +202,7 @@ const Home = () => {
         <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <Box sx={{ textAlign: 'center', mb: { xs: 6, md: 8 } }}>
                 <Chip label={chip} size="small" sx={{ mb: 2.5, fontWeight: 800, letterSpacing: 2, fontSize: '0.7rem', bgcolor: `${chipColor}18`, color: chipColor, border: `1px solid ${chipColor}30` }} />
-                <Typography sx={{ fontWeight: 900, color: t.tx, mb: sub ? 2 : 0, fontSize: { xs: '2rem', sm: '2.5rem', md: '3.2rem' }, letterSpacing: '-0.03em', lineHeight: 1.2 }}>
+                <Typography sx={{ fontWeight: 900, color: t.tx, mb: sub ? 2 : 0, fontSize: { xs: '1.5rem', sm: '2rem', md: '3.2rem' }, letterSpacing: '-0.03em', lineHeight: 1.2 }}>
                     {title}{' '}<Box component="span" sx={{ color: chipColor }}>{highlight}</Box>
                 </Typography>
                 {sub && <Typography sx={{ color: t.tx2, fontWeight: 400, maxWidth: 560, mx: 'auto', fontSize: { xs: '0.95rem', md: '1.15rem' }, mt: 1 }}>{sub}</Typography>}
@@ -214,7 +214,7 @@ const Home = () => {
         <Box sx={{ background: t.bg, transition: 'background 0.5s ease' }}>
 
             {/* Fixed theme toggle */}
-            <Box sx={{ position: 'fixed', top: 80, right: 24, zIndex: 100 }}>
+            <Box sx={{ position: 'fixed', top: { xs: 60, md: 80 }, right: { xs: 12, md: 24 }, zIndex: 100 }}>
                 <IconButton onClick={() => setIsDarkMode(!isDarkMode)} sx={{
                     bgcolor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
                     border: `1px solid ${t.border}`, backdropFilter: 'blur(10px)',
@@ -231,15 +231,15 @@ const Home = () => {
                     style={{ position: 'absolute', top: '10%', left: '0%', width: 700, height: 700, background: 'radial-gradient(circle, #6366f1 0%, transparent 75%)', filter: 'blur(100px)', zIndex: 0 }} />
 
                 <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-                    <Grid container spacing={6} alignItems="center">
+                    <Grid container spacing={{ xs: 3, md: 6 }} alignItems="center">
                         <Grid item xs={12} md={6}>
                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                                <Box sx={{ display: 'inline-flex', alignItems: 'center', px: 2, py: 1, mb: 3, borderRadius: '12px', background: 'rgba(99,102,241,0.1)', border: `1px solid ${isDarkMode ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.2)'}` }}>
+                                <Box sx={{ display: 'inline-flex', alignItems: 'center', px: 2, py: 1, mb: { xs: 1.5, md: 3 }, borderRadius: '12px', background: 'rgba(99,102,241,0.1)', border: `1px solid ${isDarkMode ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.2)'}` }}>
                                     <BoltIcon sx={{ color: '#818cf8', fontSize: 18, mr: 1 }} />
                                     <Typography variant="caption" sx={{ color: isDarkMode ? '#fff' : '#6366f1', fontWeight: 800, letterSpacing: 2 }}>V 2.0 - AI-DRIVEN PLATFORM</Typography>
                                 </Box>
                             </motion.div>
-                            <Typography variant="h1" sx={{ fontWeight: 900, color: t.tx, fontSize: { xs: '3.5rem', md: '5.2rem' }, lineHeight: 1, mb: 2, letterSpacing: '-0.04em' }}>
+                            <Typography variant="h1" sx={{ fontWeight: 900, color: t.tx, fontSize: { xs: '2.2rem', sm: '3rem', md: '5.2rem' }, lineHeight: 1, mb: 2, letterSpacing: '-0.04em' }}>
                                 Student <br />
                                 <Box component="span" sx={{ display: 'inline-block', background: isDarkMode ? 'linear-gradient(90deg,#fff 30%,#94a3b8 100%)' : 'linear-gradient(90deg,#0f172a 30%,#64748b 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', color: 'transparent' }}>Companion.</Box>
                             </Typography>
@@ -251,7 +251,7 @@ const Home = () => {
                                     </motion.div>
                                 </AnimatePresence>
                             </Box>
-                            <Grid container spacing={2} sx={{ mb: 6 }}>
+                            <Grid container spacing={2} sx={{ mb: { xs: 3, md: 6 } }}>
                                 <Grid item xs={6}>
                                     <Paper sx={{ p: 2, background: t.card, border: `1px solid ${t.border}`, borderRadius: '16px', backdropFilter: 'blur(10px)' }}>
                                         <InsightsIcon sx={{ color: '#6366f1', mb: 1 }} />
@@ -273,9 +273,9 @@ const Home = () => {
                             </Stack>
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <Box sx={{ position: 'relative', height: { xs: 350, sm: 450, md: 550 }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Box sx={{ position: 'relative', height: { xs: 280, sm: 400, md: 550 }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <motion.div animate={{ y: [0, -20, 0] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}>
-                                    <Paper sx={{ width: { xs: 320, md: 420 }, height: 260, borderRadius: '48px', background: t.glass, backdropFilter: 'blur(25px)', border: `1px solid ${t.border}`, p: 5, boxShadow: isDarkMode ? '0 50px 100px rgba(0,0,0,0.7)' : '0 30px 60px rgba(0,0,0,0.1)' }}>
+                                    <Paper sx={{ width: { xs: '90vw', sm: 360, md: 420 }, maxWidth: 420, height: { xs: 200, sm: 240, md: 260 }, borderRadius: { xs: '28px', md: '48px' }, background: t.glass, backdropFilter: 'blur(25px)', border: `1px solid ${t.border}`, p: { xs: 2.5, sm: 3.5, md: 5 }, boxShadow: isDarkMode ? '0 50px 100px rgba(0,0,0,0.7)' : '0 30px 60px rgba(0,0,0,0.1)' }}>
                                         <AnimatePresence mode="wait">
                                             <motion.div key={activeFeature} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.6 }}>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
@@ -291,13 +291,13 @@ const Home = () => {
                                         </AnimatePresence>
                                     </Paper>
                                 </motion.div>
-                                <motion.div animate={{ y: [-15, 15, -15] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }} style={{ position: 'absolute', top: '5%', right: '0%' }}>
+                                <Box sx={{ display: { xs: 'none', sm: 'block' }, position: 'absolute', top: '5%', right: '0%' }}><motion.div animate={{ y: [-15, 15, -15] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}>
                                     <Paper sx={{ p: 2.5, borderRadius: '24px', background: 'linear-gradient(135deg,#6366f1 0%,#4f46e5 100%)', color: '#fff', textAlign: 'center', boxShadow: '0 20px 40px rgba(99,102,241,0.4)' }}>
                                         <TrendingUpIcon />
                                         <Typography variant="h5" sx={{ fontWeight: 900 }}>92%</Typography>
                                         <Typography variant="caption" sx={{ fontWeight: 700, opacity: 0.9 }}>SUCCESS RATE</Typography>
                                     </Paper>
-                                </motion.div>
+                                </motion.div></Box>
                             </Box>
                         </Grid>
                     </Grid>
@@ -310,7 +310,7 @@ const Home = () => {
             </Box>
 
             {/* ═══════ SERVICES — Zigzag layout ═══════ */}
-            <Box sx={{ py: { xs: 10, md: 16 } }}>
+            <Box sx={{ py: { xs: 5, sm: 8, md: 16 } }}>
                 <Container maxWidth="lg">
                     <Heading chip="SERVICES" chipColor="#6366f1" title="Everything You Need," highlight="One Platform." sub="From placement drives to study materials — your complete academic companion." />
                     <Stack spacing={5}>
@@ -352,7 +352,7 @@ const Home = () => {
             </Box>
 
             {/* ═══════ HOW IT WORKS — 3 steps in one row ═══════ */}
-            <Box sx={{ py: { xs: 10, md: 14 }, background: t.alt }}>
+            <Box sx={{ py: { xs: 5, sm: 8, md: 14 }, background: t.alt }}>
                 <Container maxWidth="lg">
                     <Heading chip="HOW IT WORKS" chipColor="#10b981" title="Get Started in" highlight="3 Steps" />
                     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'center', sm: 'flex-start' }, justifyContent: 'center', gap: { xs: 5, sm: 0 } }}>
@@ -391,7 +391,7 @@ const Home = () => {
             </Box>
 
             {/* ═══════ BY THE NUMBERS — full-width stat strip ═══════ */}
-            <Box sx={{ py: { xs: 10, md: 16 }, position: 'relative' }}>
+            <Box sx={{ py: { xs: 5, sm: 8, md: 16 }, position: 'relative' }}>
                 <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 700, height: 700, borderRadius: '50%', opacity: isDarkMode ? 0.06 : 0.03, background: 'radial-gradient(circle,#ec4899 0%,transparent 70%)', filter: 'blur(80px)', pointerEvents: 'none' }} />
                 <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
                     <Heading chip="BY THE NUMBERS" chipColor="#ec4899" title="Platform at a" highlight="Glance" />
@@ -413,7 +413,7 @@ const Home = () => {
             </Box>
 
             {/* ═══════ IMPACT GRAPHS — Students & Faculty ═══════ */}
-            <Box sx={{ py: { xs: 10, md: 16 }, pb: { xs: 14, md: 20 }, background: t.alt }}>
+            <Box sx={{ py: { xs: 5, sm: 8, md: 16 }, pb: { xs: 8, sm: 12, md: 20 }, background: t.alt }}>
                 <Container maxWidth="lg">
                     <Heading chip="IMPACT ANALYSIS" chipColor="#f59e0b" title="How It Helps" highlight="Everyone" sub="Clear before-and-after improvements for students and faculty." />
 
@@ -486,7 +486,7 @@ const Home = () => {
             </Box>
 
             {/* ═══════ ROLE FEATURES ═══════ */}
-            <Box sx={{ py: { xs: 10, md: 16 } }}>
+            <Box sx={{ py: { xs: 5, sm: 8, md: 16 } }}>
                 <Container maxWidth="lg">
                     <Heading chip="BUILT FOR EVERYONE" chipColor="#8b5cf6" title="Tailored for" highlight="Every Role" />
                     <Grid container spacing={4} alignItems="stretch" justifyContent="center">
@@ -604,7 +604,7 @@ const Home = () => {
             </Box>
 
             {/* ═══════ CTA ═══════ */}
-            <Box sx={{ py: { xs: 10, md: 16 }, position: 'relative', overflow: 'hidden' }}>
+            <Box sx={{ py: { xs: 5, sm: 8, md: 16 }, position: 'relative', overflow: 'hidden' }}>
                 <Box sx={{ position: 'absolute', inset: 0, opacity: isDarkMode ? 0.12 : 0.06, background: 'radial-gradient(ellipse at center,#6366f1 0%,transparent 70%)', pointerEvents: 'none' }} />
                 <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
                     <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>

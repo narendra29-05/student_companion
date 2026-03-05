@@ -20,7 +20,7 @@ import {
 
 const DEPARTMENTS = ['CSE', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT', 'AIDS', 'AIML'];
 
-// Boosted Symbols for high visibility
+// Boosted Symbols for high visibility — hidden on mobile for cleaner look
 const symbols = [
   { icon: Psychology, label: "AI", x: "5%", y: "10%", size: 50, delay: 0 },
   { icon: Terminal, label: "DEV", x: "18%", y: "45%", size: 35, delay: 2 },
@@ -39,33 +39,31 @@ const symbols = [
 const FloatingSymbol = ({ icon: Icon, delay, x, y, label, size, isDark }) => (
   <motion.div
     initial={{ opacity: 0, scale: 0 }}
-    animate={{ 
-      // INCREASED OPACITY FROM 0.4 TO 0.8
-      opacity: [0.3, 0.8, 0.3], 
+    animate={{
+      opacity: [0.3, 0.8, 0.3],
       y: [0, -50, 0],
       rotate: [0, 15, -15, 0],
-      scale: 1 
+      scale: 1
     }}
     transition={{ duration: 8, repeat: Infinity, delay, ease: "easeInOut" }}
-    style={{ 
-      position: 'absolute', left: x, top: y, 
-      display: 'flex', flexDirection: 'column', alignItems: 'center', 
-      pointerEvents: 'none', zIndex: 0 
+    style={{
+      position: 'absolute', left: x, top: y,
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      pointerEvents: 'none', zIndex: 0
     }}
   >
-    <Icon sx={{ 
-      fontSize: size, 
-      // ADDED GLOW EFFECT
-      color: 'primary.main', 
-      filter: isDark 
-        ? 'drop-shadow(0 0 15px rgba(99, 102, 241, 0.8))' 
+    <Icon sx={{
+      fontSize: size,
+      color: 'primary.main',
+      filter: isDark
+        ? 'drop-shadow(0 0 15px rgba(99, 102, 241, 0.8))'
         : 'drop-shadow(0 0 10px rgba(99, 102, 241, 0.4))',
-      mb: 1 
+      mb: 1
     }} />
-    <Typography variant="caption" sx={{ 
-      fontWeight: 900, 
+    <Typography variant="caption" sx={{
+      fontWeight: 900,
       color: isDark ? 'white' : 'black',
-      opacity: 0.7, 
+      opacity: 0.7,
       fontSize: '0.7rem',
       textShadow: isDark ? '0 0 10px rgba(0,0,0,1)' : 'none'
     }}>
@@ -151,25 +149,29 @@ const Register = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-        
-        {/* HIGH VISIBILITY BACKGROUND */}
-        <Box sx={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+      <Box sx={{
+        minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        position: 'relative', overflow: 'hidden',
+        py: { xs: 2, sm: 3, md: 0 }
+      }}>
+
+        {/* HIGH VISIBILITY BACKGROUND — hidden on mobile */}
+        <Box sx={{ position: 'absolute', inset: 0, zIndex: 0, display: { xs: 'none', md: 'block' } }}>
           {symbols.map((s, i) => <FloatingSymbol key={i} {...s} isDark={isDark} />)}
-          
-          {/* Subtle Grid for depth */}
-          <Box sx={{ 
-            position: 'absolute', inset: 0, 
-            backgroundImage: `radial-gradient(${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'} 1.5px, transparent 1.5px)`,
-            backgroundSize: '40px 40px' 
-          }} />
         </Box>
 
+        {/* Subtle Grid for depth */}
+        <Box sx={{
+          position: 'absolute', inset: 0, zIndex: 0,
+          backgroundImage: `radial-gradient(${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'} 1.5px, transparent 1.5px)`,
+          backgroundSize: '40px 40px'
+        }} />
+
         {/* THEME TOGGLE */}
-        <IconButton 
+        <IconButton
           onClick={() => setMode(isDark ? 'light' : 'dark')}
-          sx={{ 
-            position: 'absolute', top: 30, right: 30, zIndex: 10, 
+          sx={{
+            position: 'absolute', top: { xs: 12, md: 30 }, right: { xs: 12, md: 30 }, zIndex: 10,
             bgcolor: 'primary.main', color: 'white',
             '&:hover': { bgcolor: 'primary.dark' }
           }}
@@ -178,70 +180,77 @@ const Register = () => {
         </IconButton>
 
         {/* REGISTRATION FORM */}
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ zIndex: 5, width: '100%', maxWidth: '600px', padding: '20px' }}>
-          <Paper elevation={24} sx={{ 
-            p: { xs: 4, md: 6 }, borderRadius: '50px', 
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ zIndex: 5, width: '100%', maxWidth: '560px', padding: '12px' }}>
+          <Paper elevation={24} sx={{
+            p: { xs: 2.5, sm: 3.5, md: 5 },
+            borderRadius: { xs: '24px', sm: '36px', md: '50px' },
             bgcolor: isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.98)',
             backdropFilter: 'blur(20px)', border: `2px solid ${theme.palette.primary.main}`
           }}>
-            <Stack spacing={4}>
+            <Stack spacing={{ xs: 2, sm: 2.5, md: 4 }}>
               <Box textAlign="center">
-                <Typography variant="h3" fontWeight={950} sx={{ letterSpacing: '-1.5px' }}>Identity Portal</Typography>
-                <Typography color="text.secondary">Securely join the academic network</Typography>
+                <Typography fontWeight={950} sx={{
+                  letterSpacing: '-1.5px',
+                  fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
+                }}>
+                  Identity Portal
+                </Typography>
+                <Typography color="text.secondary" sx={{ fontSize: { xs: '0.8rem', md: '0.875rem' } }}>
+                  Securely join the academic network
+                </Typography>
               </Box>
 
-              <ToggleButtonGroup 
-                value={role} exclusive onChange={(e, v) => v && setRole(v)} 
+              <ToggleButtonGroup
+                value={role} exclusive onChange={(e, v) => v && setRole(v)}
                 fullWidth sx={{ borderRadius: '15px', bgcolor: isDark ? '#000' : '#f1f5f9', p: 0.5 }}
               >
-                <ToggleButton value="student" sx={{ border: 'none', borderRadius: '12px !important', fontWeight: 900 }}>STUDENT</ToggleButton>
-                <ToggleButton value="faculty" sx={{ border: 'none', borderRadius: '12px !important', fontWeight: 900 }}>FACULTY</ToggleButton>
+                <ToggleButton value="student" sx={{ border: 'none', borderRadius: '12px !important', fontWeight: 900, py: { xs: 0.7, md: 1 }, fontSize: { xs: '0.8rem', md: '0.875rem' } }}>STUDENT</ToggleButton>
+                <ToggleButton value="faculty" sx={{ border: 'none', borderRadius: '12px !important', fontWeight: 900, py: { xs: 0.7, md: 1 }, fontSize: { xs: '0.8rem', md: '0.875rem' } }}>FACULTY</ToggleButton>
               </ToggleButtonGroup>
 
               {error && <Alert severity="error" sx={{ borderRadius: '16px' }}>{error}</Alert>}
 
               <form onSubmit={handleSubmit}>
-              <Stack spacing={2}>
-                <TextField fullWidth label="Full Name" name="name" onChange={handleChange} variant="outlined" />
-                
-                <Grid container spacing={2}>
+              <Stack spacing={{ xs: 1.5, md: 2 }}>
+                <TextField fullWidth label="Full Name" name="name" onChange={handleChange} variant="outlined" size="small" />
+
+                <Grid container spacing={1.5}>
                   <Grid item xs={12} sm={7}>
-                    <TextField fullWidth label={role === 'student' ? "Roll Number" : "Faculty ID"} name="identifier" onChange={handleChange} />
+                    <TextField fullWidth label={role === 'student' ? "Roll Number" : "Faculty ID"} name="identifier" onChange={handleChange} size="small" />
                   </Grid>
                   <Grid item xs={12} sm={5}>
                     <TextField
                       select fullWidth label="Department" name="department"
-                      value={formData.department} onChange={handleChange}
-                      SelectProps={{ sx: { minHeight: '56px' } }}
+                      value={formData.department} onChange={handleChange} size="small"
                     >
                       {DEPARTMENTS.map(d => <MenuItem key={d} value={d}>{d}</MenuItem>)}
                     </TextField>
                   </Grid>
                 </Grid>
 
-                <TextField fullWidth label="College Email" name="collegeEmail" onChange={handleChange} />
+                <TextField fullWidth label="College Email" name="collegeEmail" onChange={handleChange} size="small" />
 
                 {role === 'student' && (
-                  <TextField select fullWidth label="Academic Year" name="year" value={formData.year} onChange={handleChange}>
+                  <TextField select fullWidth label="Academic Year" name="year" value={formData.year} onChange={handleChange} size="small">
                     {[1,2,3,4].map(y => <MenuItem key={y} value={y}>Year {y}</MenuItem>)}
                   </TextField>
                 )}
 
-                <Grid container spacing={2}>
+                <Grid container spacing={1.5}>
                   <Grid item xs={6}>
-                    <TextField 
-                      fullWidth label="Password" name="password" type={showPwd ? 'text' : 'password'} onChange={handleChange}
+                    <TextField
+                      fullWidth label="Password" name="password" type={showPwd ? 'text' : 'password'} onChange={handleChange} size="small"
                       InputProps={{ endAdornment: (
                         <InputAdornment position="end">
-                          <IconButton onClick={() => setShowPwd(!showPwd)}>{showPwd ? <VisibilityOff /> : <Visibility />}</IconButton>
+                          <IconButton onClick={() => setShowPwd(!showPwd)} size="small">{showPwd ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}</IconButton>
                         </InputAdornment>
-                      )}} 
+                      )}}
                     />
                   </Grid>
                   <Grid item xs={6}>
-                    <TextField 
-                      fullWidth label="Confirm Password" name="confirmPassword" type={showPwd ? 'text' : 'password'} onChange={handleChange}
-                      sx={{ 
+                    <TextField
+                      fullWidth label="Confirm" name="confirmPassword" type={showPwd ? 'text' : 'password'} onChange={handleChange} size="small"
+                      sx={{
                         '& .MuiOutlinedInput-root': {
                           '& fieldset': { borderColor: passwordsMatch ? '#10b981' : '' },
                           '&.Mui-focused fieldset': { borderColor: passwordsMatch ? '#10b981' : '' }
@@ -254,7 +263,8 @@ const Register = () => {
                 <Button
                   type="submit" variant="contained" fullWidth size="large" disabled={loading}
                   sx={{
-                    py: 2, borderRadius: '18px', fontWeight: 900,
+                    py: { xs: 1.2, md: 1.8 }, borderRadius: '14px', fontWeight: 900,
+                    fontSize: { xs: '0.85rem', md: '1rem' },
                     background: 'linear-gradient(45deg, #6366f1, #a855f7)',
                     boxShadow: '0 10px 30px rgba(99, 102, 241, 0.4)'
                   }}
@@ -263,12 +273,12 @@ const Register = () => {
                 </Button>
 
                 {/* SIGN IN LINK */}
-                <Typography variant="body2" textAlign="center">
+                <Typography variant="body2" textAlign="center" sx={{ fontSize: { xs: '0.8rem', md: '0.875rem' } }}>
                   Existing Member?
                   <Button
                     variant="text"
                     onClick={() => navigate('/login')}
-                    sx={{ fontWeight: 900, ml: 1, textDecoration: 'underline' }}
+                    sx={{ fontWeight: 900, ml: 0.5, textDecoration: 'underline', fontSize: 'inherit' }}
                   >
                     Sign In Here
                   </Button>

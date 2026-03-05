@@ -150,7 +150,7 @@ const TodoTracker = () => {
                             WORKSPACE_CORE
                         </Typography>
                     </Stack>
-                    <Typography variant="h3" sx={{ fontWeight: 900, color: theme.text, letterSpacing: '-0.04em', fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}>
+                    <Typography variant="h3" sx={{ fontWeight: 900, color: theme.text, letterSpacing: '-0.04em', fontSize: { xs: '1.5rem', sm: '2rem', md: '3rem' } }}>
                         Task <span style={{ color: '#6366f1' }}>Highlights.</span>
                     </Typography>
                 </Box>
@@ -273,7 +273,7 @@ const TodoTracker = () => {
                                             <ListItemText
                                                 primary={t.task}
                                                 primaryTypographyProps={{
-                                                    fontWeight: 800, color: theme.text, fontSize: '1.2rem',
+                                                    fontWeight: 800, color: theme.text, fontSize: { xs: '0.95rem', sm: '1.2rem' },
                                                     letterSpacing: '-0.02em',
                                                     sx: {
                                                         textDecoration: t.isCompleted ? 'line-through' : 'none',

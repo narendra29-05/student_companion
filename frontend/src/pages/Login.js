@@ -77,21 +77,21 @@ const Login = () => {
     };
 
     return (
-        <Box sx={{ 
-            minHeight: '100vh', 
-            background: theme.bg, 
-            display: 'flex', 
-            alignItems: 'center', 
-            position: 'relative', 
+        <Box sx={{
+            height: '100dvh',
+            background: theme.bg,
+            display: 'flex',
+            alignItems: 'center',
+            position: 'relative',
             overflow: 'hidden',
             transition: 'background 0.5s ease'
         }}>
             {/* --- THEME TOGGLE --- */}
-            <Box sx={{ position: 'absolute', top: 30, right: 30, zIndex: 10 }}>
-                <IconButton 
-                    onClick={() => setIsDarkMode(!isDarkMode)} 
-                    sx={{ 
-                        bgcolor: theme.card, 
+            <Box sx={{ position: 'absolute', top: { xs: 12, md: 30 }, right: { xs: 12, md: 30 }, zIndex: 10 }}>
+                <IconButton
+                    onClick={() => setIsDarkMode(!isDarkMode)}
+                    sx={{
+                        bgcolor: theme.card,
                         border: `1px solid ${theme.glassBorder}`,
                         color: isDarkMode ? '#fbbf24' : '#6366f1',
                         backdropFilter: 'blur(10px)',
@@ -108,15 +108,15 @@ const Login = () => {
                 transition={{ duration: 10, repeat: Infinity }}
                 style={{
                     position: 'absolute', top: '10%', left: '10%', width: '600px', height: '600px',
-                    background: `radial-gradient(circle, ${roleContent[role].color} 0%, transparent 70%)`, 
+                    background: `radial-gradient(circle, ${roleContent[role].color} 0%, transparent 70%)`,
                     filter: 'blur(120px)', zIndex: 0
                 }}
             />
 
             <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-                <Grid container spacing={8} alignItems="center">
-                    
-                    {/* --- LEFT SIDE: AUTH VISUALIZER --- */}
+                <Grid container spacing={{ xs: 0, md: 8 }} alignItems="center">
+
+                    {/* --- LEFT SIDE: AUTH VISUALIZER (desktop only) --- */}
                     <Grid item xs={12} md={7} sx={{ display: { xs: 'none', md: 'block' } }}>
                         <AnimatePresence mode="wait">
                             <motion.div
@@ -127,20 +127,20 @@ const Login = () => {
                                 transition={{ duration: 0.5 }}
                             >
                                 <Box sx={{ p: 2 }}>
-                                    <Chip 
+                                    <Chip
                                         icon={<HubIcon sx={{ color: `${roleContent[role].color} !important`, fontSize: '1rem' }} />}
-                                        label={roleContent[role].status} 
-                                        sx={{ 
-                                            bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(99,102,241,0.05)', 
-                                            color: theme.text, mb: 3, px: 2, py: 2, 
-                                            borderRadius: '12px', border: `1px solid ${theme.glassBorder}` 
-                                        }} 
+                                        label={roleContent[role].status}
+                                        sx={{
+                                            bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(99,102,241,0.05)',
+                                            color: theme.text, mb: 3, px: 2, py: 2,
+                                            borderRadius: '12px', border: `1px solid ${theme.glassBorder}`
+                                        }}
                                     />
                                     <Typography variant="h2" sx={{ fontWeight: 900, color: theme.text, mb: 2, letterSpacing: '-0.05em', lineHeight: 1.1 }}>
-                                        Secure <Box component="span" sx={{ 
+                                        Secure <Box component="span" sx={{
                                             display: 'inline-block',
-                                            background: isDarkMode 
-                                                ? `linear-gradient(90deg, ${roleContent[role].color}, #fff)` 
+                                            background: isDarkMode
+                                                ? `linear-gradient(90deg, ${roleContent[role].color}, #fff)`
                                                 : `linear-gradient(90deg, ${roleContent[role].color}, #1e293b)`,
                                             WebkitBackgroundClip: 'text',
                                             WebkitTextFillColor: 'transparent',
@@ -152,7 +152,7 @@ const Login = () => {
                                     </Typography>
 
                                     <motion.div animate={{ y: [0, -20, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}>
-                                        <Paper sx={{ 
+                                        <Paper sx={{
                                             p: 5, width: '380px', borderRadius: '40px',
                                             background: theme.card,
                                             border: `1px solid ${theme.glassBorder}`,
@@ -162,7 +162,7 @@ const Login = () => {
                                             boxShadow: theme.shadow
                                         }}>
                                             <Box sx={{ position: 'relative', display: 'inline-block', mb: 3 }}>
-                                                <Avatar sx={{ 
+                                                <Avatar sx={{
                                                     bgcolor: roleContent[role].color, width: 80, height: 80, mx: 'auto',
                                                     boxShadow: `0 0 40px ${roleContent[role].color}40`
                                                 }}>
@@ -193,32 +193,52 @@ const Login = () => {
                     {/* --- RIGHT SIDE: LOGIN FORM --- */}
                     <Grid item xs={12} md={5}>
                         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
-                            <Paper sx={{ 
-                                p: { xs: 4, md: 6 }, borderRadius: '40px', 
+                            <Paper sx={{
+                                p: { xs: 3, sm: 4, md: 6 },
+                                borderRadius: { xs: '24px', md: '40px' },
                                 background: theme.card,
                                 backdropFilter: 'blur(40px)',
                                 border: `1px solid ${theme.glassBorder}`,
-                                boxShadow: theme.shadow
+                                boxShadow: theme.shadow,
+                                mx: { xs: 1, sm: 2, md: 0 },
                             }}>
-                                <Box sx={{ mb: 5, textAlign: 'center' }}>
-                                    <Typography variant="h4" sx={{ fontWeight: 900, color: theme.text, mb: 1.5, letterSpacing: '-0.02em' }}>Authentication</Typography>
-                                    <Typography sx={{ color: theme.subText, fontWeight: 500 }}>Student Companion v2.0</Typography>
+                                <Box sx={{ mb: { xs: 3, md: 5 }, textAlign: 'center' }}>
+                                    {/* Mobile-only icon */}
+                                    <Box sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', mb: 2 }}>
+                                        <Avatar sx={{
+                                            bgcolor: roleContent[role].color, width: 56, height: 56,
+                                            boxShadow: `0 0 30px ${roleContent[role].color}40`
+                                        }}>
+                                            {React.cloneElement(roleContent[role].icon, { sx: { fontSize: 28 } })}
+                                        </Avatar>
+                                    </Box>
+                                    <Typography variant="h4" sx={{
+                                        fontWeight: 900, color: theme.text, mb: 0.5, letterSpacing: '-0.02em',
+                                        fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' }
+                                    }}>
+                                        Authentication
+                                    </Typography>
+                                    <Typography sx={{ color: theme.subText, fontWeight: 500, fontSize: { xs: '0.8rem', md: '0.875rem' } }}>
+                                        Student Companion v2.0
+                                    </Typography>
                                 </Box>
 
-                                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 5 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'center', mb: { xs: 3, md: 5 } }}>
                                     <ToggleButtonGroup
                                         value={role} exclusive
                                         onChange={(e, next) => next && setRole(next)}
-                                        sx={{ 
-                                            background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', 
-                                            borderRadius: '20px', p: 0.7,
+                                        sx={{
+                                            background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                                            borderRadius: '16px', p: 0.5,
                                             '& .MuiToggleButton-root': {
-                                                border: 'none', borderRadius: '14px !important', px: 4, py: 1, 
+                                                border: 'none', borderRadius: '12px !important',
+                                                px: { xs: 3, md: 4 }, py: { xs: 0.8, md: 1 },
                                                 color: theme.subText, textTransform: 'none', fontWeight: 700,
-                                                '&.Mui-selected': { 
-                                                    background: isDarkMode ? '#fff' : '#0f172a', 
+                                                fontSize: { xs: '0.85rem', md: '0.9rem' },
+                                                '&.Mui-selected': {
+                                                    background: isDarkMode ? '#fff' : '#0f172a',
                                                     color: isDarkMode ? '#020617' : '#fff',
-                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)' 
+                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                                                 }
                                             }
                                         }}
@@ -228,34 +248,34 @@ const Login = () => {
                                     </ToggleButtonGroup>
                                 </Box>
 
-                                {error && <Alert severity="error" sx={{ mb: 3, borderRadius: '16px' }}>{error}</Alert>}
+                                {error && <Alert severity="error" sx={{ mb: 2, borderRadius: '12px', fontSize: '0.85rem' }}>{error}</Alert>}
 
                                 <form onSubmit={handleSubmit}>
-                                    <Stack spacing={3}>
+                                    <Stack spacing={{ xs: 2, md: 3 }}>
                                         <TextField
                                             fullWidth label={role === 'student' ? 'Roll Number' : 'Faculty ID'}
-                                            variant="filled"
+                                            variant="filled" size="medium"
                                             value={formData.identifier}
                                             onChange={(e) => setFormData({ ...formData, identifier: e.target.value.toUpperCase() })}
-                                            InputProps={{ 
-                                                disableUnderline: true, 
-                                                sx: { 
-                                                    borderRadius: '16px', background: theme.inputBg, color: theme.text,
+                                            InputProps={{
+                                                disableUnderline: true,
+                                                sx: {
+                                                    borderRadius: '14px', background: theme.inputBg, color: theme.text,
                                                     border: `1px solid ${theme.glassBorder}`, transition: '0.3s',
                                                     '&.Mui-focused': { border: `1px solid ${roleContent[role].color}` }
-                                                } 
+                                                }
                                             }}
                                             InputLabelProps={{ sx: { color: theme.subText, '&.Mui-focused': { color: theme.text } } }}
                                         />
                                         <TextField
-                                            fullWidth label="Secret Password" type={showPwd ? 'text' : 'password'}
-                                            variant="filled"
+                                            fullWidth label="Password" type={showPwd ? 'text' : 'password'}
+                                            variant="filled" size="medium"
                                             value={formData.password}
                                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                             InputProps={{
                                                 disableUnderline: true,
                                                 sx: {
-                                                    borderRadius: '16px', background: theme.inputBg, color: theme.text,
+                                                    borderRadius: '14px', background: theme.inputBg, color: theme.text,
                                                     border: `1px solid ${theme.glassBorder}`, transition: '0.3s',
                                                     '&.Mui-focused': { border: `1px solid ${roleContent[role].color}` }
                                                 },
@@ -269,15 +289,16 @@ const Login = () => {
                                             }}
                                             InputLabelProps={{ sx: { color: theme.subText, '&.Mui-focused': { color: theme.text } } }}
                                         />
-                                        
+
                                         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                             <Button
                                                 type="submit" fullWidth disabled={loading}
-                                                sx={{ 
-                                                    py: 2.2, borderRadius: '18px', fontWeight: 900, fontSize: '1.05rem',
+                                                sx={{
+                                                    py: { xs: 1.5, md: 2 }, borderRadius: '14px', fontWeight: 900,
+                                                    fontSize: { xs: '0.9rem', md: '1.05rem' },
                                                     background: `linear-gradient(45deg, ${roleContent[role].color}, ${roleContent[role].color}cc)`,
                                                     color: '#fff', textTransform: 'none',
-                                                    boxShadow: `0 15px 30px ${roleContent[role].color}40`,
+                                                    boxShadow: `0 12px 24px ${roleContent[role].color}40`,
                                                     '&:hover': { filter: 'brightness(1.1)' }
                                                 }}
                                             >
@@ -287,8 +308,8 @@ const Login = () => {
                                     </Stack>
                                 </form>
 
-                                <Typography align="center" sx={{ mt: 5, color: theme.subText, fontWeight: 500 }}>
-                                    New Member? <Button onClick={() => navigate('/register')} sx={{ color: isDarkMode ? '#fff' : roleContent[role].color, fontWeight: 800, textTransform: 'none' }}>Initialize Account</Button>
+                                <Typography align="center" sx={{ mt: { xs: 2.5, md: 5 }, color: theme.subText, fontWeight: 500, fontSize: { xs: '0.85rem', md: '0.9rem' } }}>
+                                    New Member? <Button onClick={() => navigate('/register')} sx={{ color: isDarkMode ? '#fff' : roleContent[role].color, fontWeight: 800, textTransform: 'none', fontSize: 'inherit' }}>Initialize Account</Button>
                                 </Typography>
                             </Paper>
                         </motion.div>

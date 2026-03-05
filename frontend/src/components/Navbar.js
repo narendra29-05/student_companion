@@ -169,7 +169,7 @@ const Navbar = () => {
                 },
             }}
         >
-            <Toolbar sx={{ py: { xs: 0.5, md: 0.8 }, px: { xs: 1.5, md: 3 } }}>
+            <Toolbar sx={{ py: { xs: 0.3, md: 0.8 }, px: { xs: 1, sm: 1.5, md: 3 }, minHeight: { xs: 52, md: 64 } }}>
                 {/* Logo */}
                 <motion.div
                     initial={{ opacity: 0, x: -20 }}
@@ -179,8 +179,8 @@ const Navbar = () => {
                     <Box
                         onClick={() => navigate('/')}
                         sx={{
-                            display: 'flex', alignItems: 'center', gap: 1.5, cursor: 'pointer',
-                            mr: { xs: 1, md: 3 },
+                            display: 'flex', alignItems: 'center', gap: { xs: 0.8, md: 1.5 }, cursor: 'pointer',
+                            mr: { xs: 0.5, sm: 1, md: 3 },
                             '&:hover .logo-icon': { transform: 'rotate(-10deg) scale(1.1)' },
                             '&:hover .logo-text': { background: 'linear-gradient(135deg, #c4b5fd, #f9a8d4)', WebkitBackgroundClip: 'text' },
                         }}
@@ -188,29 +188,29 @@ const Navbar = () => {
                         <Avatar
                             className="logo-icon"
                             sx={{
-                                width: 38, height: 38,
+                                width: { xs: 32, md: 38 }, height: { xs: 32, md: 38 },
                                 background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)',
                                 boxShadow: '0 4px 15px rgba(99,102,241,0.4)',
                                 transition: 'transform 0.3s ease',
                             }}
                         >
-                            <WorkIcon sx={{ fontSize: 20 }} />
+                            <WorkIcon sx={{ fontSize: { xs: 16, md: 20 } }} />
                         </Avatar>
                         <Typography
                             className="logo-text"
                             sx={{
                                 fontWeight: 900,
-                                fontSize: { xs: '1rem', md: '1.15rem' },
+                                fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1.15rem' },
                                 background: 'linear-gradient(135deg, #fff 30%, rgba(255,255,255,0.7) 100%)',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
                                 backgroundClip: 'text',
                                 letterSpacing: '-0.01em',
                                 transition: 'all 0.3s ease',
+                                whiteSpace: 'nowrap',
                             }}
                         >
-                            {isMobile ? 'SC' : 'Student Companion'}
-                        </Typography>
+                            {isMobile ? 'Student Companion' : 'Student Companion'}
                     </Box>
                 </motion.div>
 
@@ -357,11 +357,11 @@ const Navbar = () => {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.3, duration: 0.4, type: 'spring' }}
                         >
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1, md: 1.5 } }}>
                                 <NotificationBell />
                                 <Typography variant="body2" sx={{
                                     color: 'rgba(255,255,255,0.75)', fontWeight: 600, fontSize: '0.85rem',
-                                    display: { xs: 'none', sm: 'block' },
+                                    display: { xs: 'none', lg: 'block' },
                                 }}>
                                     {user.name}
                                 </Typography>
@@ -377,7 +377,7 @@ const Navbar = () => {
                                             <Avatar
                                                 src={resolveUrl(user.profilePicPath)}
                                                 sx={{
-                                                    width: 36, height: 36,
+                                                    width: { xs: 30, md: 36 }, height: { xs: 30, md: 36 },
                                                     bgcolor: '#2d1560',
                                                     fontSize: '0.9rem',
                                                     fontWeight: 800,

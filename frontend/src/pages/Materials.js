@@ -83,7 +83,7 @@ const Materials = () => {
         <Box sx={{
             backgroundColor: '#f8fafc',
             minHeight: '100vh',
-            py: 8,
+            py: { xs: 3, sm: 5, md: 8 },
             position: 'relative',
             overflow: 'hidden'
         }}>
@@ -96,20 +96,20 @@ const Materials = () => {
             <Container maxWidth="lg">
                 {/* --- HEADER --- */}
                 <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-                    <Box sx={{ textAlign: 'center', mb: 8 }}>
+                    <Box sx={{ textAlign: 'center', mb: { xs: 3, md: 8 } }}>
                         <Avatar sx={{
-                            bgcolor: '#6366f1', width: 80, height: 80, mx: 'auto', mb: 3,
+                            bgcolor: '#6366f1', width: { xs: 56, md: 80 }, height: { xs: 56, md: 80 }, mx: 'auto', mb: { xs: 1.5, md: 3 },
                             boxShadow: '0 10px 25px rgba(99, 102, 241, 0.4)'
                         }}>
-                            <LibraryBooksIcon sx={{ fontSize: 40 }} />
+                            <LibraryBooksIcon sx={{ fontSize: { xs: 28, md: 40 } }} />
                         </Avatar>
                         <Typography variant="h2" sx={{
                             fontWeight: 900, color: '#1e293b', letterSpacing: '-0.02em', mb: 1,
-                            fontSize: { xs: '2.5rem', md: '3.75rem' }
+                            fontSize: { xs: '1.6rem', sm: '2rem', md: '3.75rem' }
                         }}>
                             Academic <span style={{ color: '#6366f1' }}>Repository</span>
                         </Typography>
-                        <Typography variant="h6" sx={{ color: '#64748b', fontWeight: 400 }}>
+                        <Typography sx={{ color: '#64748b', fontWeight: 400, fontSize: { xs: '0.85rem', md: '1.25rem' } }}>
                             Curated high-quality resources for your engineering excellence
                         </Typography>
                     </Box>
@@ -118,11 +118,11 @@ const Materials = () => {
                 {/* --- FILTERS BENTO CARD --- */}
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}>
     <Paper elevation={0} sx={{
-        p: { xs: 3, md: 5 }, mb: 6, borderRadius: '32px', border: '1px solid #e2e8f0',
+        p: { xs: 2, sm: 3, md: 5 }, mb: { xs: 3, md: 6 }, borderRadius: { xs: '20px', md: '32px' }, border: '1px solid #e2e8f0',
         background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(10px)',
         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.05)'
     }}>
-        <Grid container spacing={4}>
+        <Grid container spacing={{ xs: 2, md: 4 }}>
             {/* Regulation Filter */}
             <Grid item xs={12} md={4}>
                 <FormControl fullWidth variant="filled">
@@ -239,16 +239,16 @@ const Materials = () => {
                             key={selection.subject}
                             variants={containerVariants} initial="hidden" animate="visible" exit="hidden"
                         >
-                            <Grid container spacing={4}>
+                            <Grid container spacing={{ xs: 2, md: 4 }}>
                                 <Grid item xs={12} md={8}>
-                                    <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
-                                        <SchoolIcon sx={{ color: '#6366f1', fontSize: 32 }} />
-                                        <Typography variant="h4" sx={{ fontWeight: 900, color: '#1e293b' }}>
+                                    <Box sx={{ mb: { xs: 2, md: 4 }, display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 } }}>
+                                        <SchoolIcon sx={{ color: '#6366f1', fontSize: { xs: 24, md: 32 } }} />
+                                        <Typography sx={{ fontWeight: 900, color: '#1e293b', fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2.125rem' } }}>
                                             {selection.subject} Modules
                                         </Typography>
                                     </Box>
 
-                                    <Paper sx={{ borderRadius: '32px', overflow: 'hidden', border: '1px solid #e2e8f0', background: '#fff' }}>
+                                    <Paper sx={{ borderRadius: { xs: '20px', md: '32px' }, overflow: 'hidden', border: '1px solid #e2e8f0', background: '#fff' }}>
                                         <List sx={{ p: 0 }}>
                                             {[...selectedMaterial.units].sort((a, b) => {
                                                 const numA = parseInt(a.name.match(/\d+/)?.[0]) || 0;
@@ -257,7 +257,7 @@ const Materials = () => {
                                             }).map((unit, index) => (
                                                 <motion.div key={index} variants={itemVariants}>
                                                     <ListItem sx={{
-                                                        py: 4, px: 5, transition: '0.3s',
+                                                        py: { xs: 2, sm: 3, md: 4 }, px: { xs: 2, sm: 3, md: 5 }, transition: '0.3s',
                                                         flexDirection: { xs: 'column', sm: 'row' },
                                                         alignItems: { xs: 'flex-start', sm: 'center' },
                                                         gap: 2,
@@ -288,7 +288,7 @@ const Materials = () => {
                                                             Access
                                                         </Button>
                                                     </ListItem>
-                                                    {index !== selectedMaterial.units.length - 1 && <Divider sx={{ mx: 5, opacity: 0.5 }} />}
+                                                    {index !== selectedMaterial.units.length - 1 && <Divider sx={{ mx: { xs: 2, sm: 3, md: 5 }, opacity: 0.5 }} />}
                                                 </motion.div>
                                             ))}
                                         </List>
@@ -302,7 +302,7 @@ const Materials = () => {
                                         {selectedMaterial.syllabusLink && (
                                             <motion.div whileHover={{ scale: 1.02 }}>
                                                 <Paper sx={{
-                                                    p: 4, borderRadius: '32px', color: '#fff',
+                                                    p: { xs: 3, md: 4 }, borderRadius: { xs: '20px', md: '32px' }, color: '#fff',
                                                     background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
                                                     boxShadow: '0 20px 25px -5px rgba(99, 102, 241, 0.3)'
                                                 }}>
@@ -320,7 +320,7 @@ const Materials = () => {
                                             </motion.div>
                                         )}
 
-                                        <Paper sx={{ p: 4, borderRadius: '32px', border: '2px dashed #cbd5e1', bgcolor: '#f1f5f9' }}>
+                                        <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: { xs: '20px', md: '32px' }, border: '2px dashed #cbd5e1', bgcolor: '#f1f5f9' }}>
                                             <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#475569', mb: 1.5 }}>
                                                 Learning Tip
                                             </Typography>
@@ -334,7 +334,7 @@ const Materials = () => {
                         </motion.div>
                     ) : !loading && selection.regulation && availableSemesters.length === 0 ? (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                            <Box sx={{ textAlign: 'center', py: 10, bgcolor: '#fff', borderRadius: '32px', border: '2px dashed #e2e8f0' }}>
+                            <Box sx={{ textAlign: 'center', py: { xs: 5, md: 10 }, px: { xs: 2, md: 4 }, bgcolor: '#fff', borderRadius: { xs: '20px', md: '32px' }, border: '2px dashed #e2e8f0' }}>
                                 <Typography variant="h6" sx={{ color: '#94a3b8', fontWeight: 600 }}>
                                     No materials found for {selection.regulation} regulation.
                                 </Typography>
@@ -345,7 +345,7 @@ const Materials = () => {
                         </motion.div>
                     ) : !loading && (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                            <Box sx={{ textAlign: 'center', py: 10, bgcolor: '#fff', borderRadius: '32px', border: '2px dashed #e2e8f0' }}>
+                            <Box sx={{ textAlign: 'center', py: { xs: 5, md: 10 }, px: { xs: 2, md: 4 }, bgcolor: '#fff', borderRadius: { xs: '20px', md: '32px' }, border: '2px dashed #e2e8f0' }}>
                                 <Typography variant="h6" sx={{ color: '#94a3b8', fontWeight: 600 }}>
                                     Select your Regulation, Semester, and Subject to view materials
                                 </Typography>
