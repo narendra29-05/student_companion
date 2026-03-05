@@ -6,7 +6,7 @@ const rateLimit = require('express-rate-limit');
 const { connectDB } = require('./config/db');
 const { syncDB } = require('./models');
 const errorHandler = require('./middleware/errorHandler');
-const { startDeadlineReminderCron } = require('./utils/emailService');
+const { startDeadlineReminderCron, verifyTransporter, sendTestEmail } = require('./utils/emailService');
 
 dotenv.config();
 
@@ -56,6 +56,24 @@ app.get('/api/health', (req, res) => {
     res.json({ success: true, message: 'Server is running' });
 });
 
+// Test email endpoint (for debugging email issues)
+app.post('/api/test-email', async (req, res) => {
+    const { to } = req.body;
+    if (!to) {
+        return res.status(400).json({ success: false, message: 'Please provide "to" email address' });
+    }
+    try {
+        const result = await sendTestEmail(to);
+        if (result) {
+            res.json({ success: true, message: `Test email sent to ${to}` });
+        } else {
+            res.status(500).json({ success: false, message: 'Failed to send test email. Check server logs for details.' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, message: `Email error: ${error.message}` });
+    }
+});
+
 // 404 handler
 app.use((req, res) => {
     res.status(404).json({ success: false, message: 'Route not found' });
@@ -73,11 +91,20 @@ const start = async () => {
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
 
-        // Warn if email env vars are missing
+        // Verify email configuration at startup
         const emailVars = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_USER', 'EMAIL_PASS', 'EMAIL_FROM'];
         const missing = emailVars.filter((v) => !process.env[v]);
         if (missing.length > 0) {
-            console.warn(`⚠️  Missing email env vars: ${missing.join(', ')} — email notifications will fail`);
+            console.warn(`[Email] Missing env vars: ${missing.join(', ')} — email notifications will fail`);
+        } else {
+            // Verify SMTP connection at startup
+            const emailOk = await verifyTransporter();
+            if (emailOk) {
+                console.log('[Email] SMTP ready — emails will be delivered');
+            } else {
+                console.error('[Email] SMTP verification FAILED — emails will NOT work. Check EMAIL_USER and EMAIL_PASS in .env');
+                console.error('[Email] For Gmail: ensure 2-Step Verification is ON and generate a new App Password at https://myaccount.google.com/apppasswords');
+            }
         }
 
         startDeadlineReminderCron();

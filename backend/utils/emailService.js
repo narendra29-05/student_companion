@@ -6,6 +6,7 @@ const { Drive, DriveEligibleDepartment } = require('../models/Drive');
 const { createNotification, createBulkNotifications } = require('./notificationService');
 
 let transporter = null;
+let transporterVerified = false;
 
 const getTransporter = () => {
     if (!transporter) {
@@ -17,23 +18,80 @@ const getTransporter = () => {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS,
             },
+            pool: true,
+            maxConnections: 5,
+            maxMessages: 100,
+            rateDelta: 1000,
+            rateLimit: 5,
         });
+        transporterVerified = false;
     }
     return transporter;
 };
 
-const sendEmail = async ({ to, subject, html }) => {
-    try {
-        await getTransporter().sendMail({
-            from: process.env.EMAIL_FROM,
-            to,
-            subject,
-            html,
-        });
-        console.log(`Email sent to ${to}`);
-    } catch (error) {
-        console.error(`Failed to send email to ${to}:`, error.message);
+const resetTransporter = () => {
+    if (transporter) {
+        transporter.close();
     }
+    transporter = null;
+    transporterVerified = false;
+};
+
+const verifyTransporter = async () => {
+    try {
+        const t = getTransporter();
+        await t.verify();
+        transporterVerified = true;
+        console.log('[Email] SMTP connection verified successfully');
+        return true;
+    } catch (error) {
+        console.error('[Email] SMTP verification failed:', error.message);
+        resetTransporter();
+        return false;
+    }
+};
+
+const sendEmail = async ({ to, subject, html }, retries = 2) => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            const t = getTransporter();
+
+            // Verify on first use
+            if (!transporterVerified) {
+                const ok = await verifyTransporter();
+                if (!ok) {
+                    console.error(`[Email] SMTP not verified — cannot send to ${to}. Check EMAIL_HOST, EMAIL_USER, EMAIL_PASS in .env`);
+                    return false;
+                }
+            }
+
+            await t.sendMail({
+                from: process.env.EMAIL_FROM,
+                to,
+                subject,
+                html,
+            });
+            console.log(`[Email] Sent to ${to} — "${subject}"`);
+            return true;
+        } catch (error) {
+            console.error(`[Email] Attempt ${attempt}/${retries} failed for ${to}:`, error.message);
+
+            // Reset transporter on auth or connection errors so next attempt creates fresh connection
+            if (error.code === 'EAUTH' || error.code === 'ESOCKET' || error.code === 'ECONNECTION' || error.responseCode === 535) {
+                console.error('[Email] Auth/connection error — resetting transporter');
+                resetTransporter();
+            }
+
+            if (attempt === retries) {
+                console.error(`[Email] All ${retries} attempts failed for ${to}. Last error: ${error.message}`);
+                return false;
+            }
+
+            // Wait before retry
+            await new Promise((r) => setTimeout(r, 1000 * attempt));
+        }
+    }
+    return false;
 };
 
 const baseTemplate = (content) => `
@@ -283,16 +341,20 @@ const notifyNewDrive = async (drive, departments) => {
         console.log(`[Drive Notify] Found ${students.length} eligible student(s), sending emails...`);
 
         const BATCH_SIZE = 10;
+        let totalSent = 0;
+        let totalFailed = 0;
         for (let i = 0; i < students.length; i += BATCH_SIZE) {
             const batch = students.slice(i, i + BATCH_SIZE);
             const results = await Promise.allSettled(
                 batch.map((s) => sendNewDriveEmail(s, drive))
             );
             const failed = results.filter((r) => r.status === 'rejected').length;
+            totalSent += batch.length - failed;
+            totalFailed += failed;
             if (failed > 0) console.warn(`[Drive Notify] Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${failed}/${batch.length} email(s) failed`);
         }
 
-        console.log(`[Drive Notify] New drive notification sent to ${students.length} student(s)`);
+        console.log(`[Drive Notify] New drive notification complete — sent: ${totalSent}, failed: ${totalFailed}`);
 
         // In-app notifications
         const notifications = students.map((s) => ({
@@ -334,16 +396,20 @@ const notifyDriveUpdate = async (drive, departments, changes) => {
         console.log(`[Drive Notify] Found ${students.length} eligible student(s), sending update emails...`);
 
         const BATCH_SIZE = 10;
+        let totalSent = 0;
+        let totalFailed = 0;
         for (let i = 0; i < students.length; i += BATCH_SIZE) {
             const batch = students.slice(i, i + BATCH_SIZE);
             const results = await Promise.allSettled(
                 batch.map((s) => sendDriveUpdateEmail(s, drive, changes))
             );
             const failed = results.filter((r) => r.status === 'rejected').length;
+            totalSent += batch.length - failed;
+            totalFailed += failed;
             if (failed > 0) console.warn(`[Drive Notify] Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${failed}/${batch.length} email(s) failed`);
         }
 
-        console.log(`[Drive Notify] Drive update notification sent to ${students.length} student(s)`);
+        console.log(`[Drive Notify] Drive update notification complete — sent: ${totalSent}, failed: ${totalFailed}`);
 
         // In-app notifications
         const changesSummary = changes.map((c) => c.label).join(', ');
@@ -455,16 +521,20 @@ const notifyAssignmentAssigned = async (assignment, students, faculty) => {
         console.log(`[Assignment Notify] New assignment "${assignment.title}" — notifying ${students.length} student(s)`);
 
         const BATCH_SIZE = 10;
+        let totalSent = 0;
+        let totalFailed = 0;
         for (let i = 0; i < students.length; i += BATCH_SIZE) {
             const batch = students.slice(i, i + BATCH_SIZE);
             const results = await Promise.allSettled(
                 batch.map((s) => sendAssignmentAssignedEmail(s, assignment, faculty))
             );
             const failed = results.filter((r) => r.status === 'rejected').length;
+            totalSent += batch.length - failed;
+            totalFailed += failed;
             if (failed > 0) console.warn(`[Assignment Notify] Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${failed}/${batch.length} email(s) failed`);
         }
 
-        console.log(`[Assignment Notify] Assignment notification sent to ${students.length} student(s)`);
+        console.log(`[Assignment Notify] Assignment notification complete — sent: ${totalSent}, failed: ${totalFailed}`);
 
         // In-app notifications
         const notifications = students.map((s) => ({
@@ -523,6 +593,27 @@ const sendSubmissionNotification = async (faculty, student, assignment, submissi
     }
 };
 
+// --- Test email endpoint helper ---
+const sendTestEmail = async (to) => {
+    const html = `
+        <h2>Test Email</h2>
+        <p>This is a test email from <strong>Student Companion</strong>.</p>
+        <p>If you received this, your email configuration is working correctly!</p>
+        <div class="detail">
+            <strong>SMTP Host:</strong> ${process.env.EMAIL_HOST}<br>
+            <strong>SMTP Port:</strong> ${process.env.EMAIL_PORT}<br>
+            <strong>From:</strong> ${process.env.EMAIL_FROM}<br>
+            <strong>Sent At:</strong> ${new Date().toLocaleString('en-IN')}
+        </div>
+    `;
+
+    return sendEmail({
+        to,
+        subject: 'Test Email — Student Companion',
+        html: baseTemplate(html),
+    });
+};
+
 module.exports = {
     sendWelcomeEmail,
     sendFacultyWelcomeEmail,
@@ -532,4 +623,6 @@ module.exports = {
     notifyDriveUpdate,
     detectChanges,
     startDeadlineReminderCron,
+    verifyTransporter,
+    sendTestEmail,
 };

@@ -141,9 +141,9 @@ const Materials = () => {
                             borderRadius: '16px',
                             background: '#f1f5f9',
                             fontWeight: 700,
-                            height: '70px',
+                            height: '56px',
                             '& .MuiSelect-select': {
-                                pt: 3,
+                                pt: 2.5,
                                 pb: 1,
                                 fontSize: '1.1rem'
                             }
@@ -174,10 +174,9 @@ const Materials = () => {
                             borderRadius: '16px',
                             background: '#f1f5f9',
                             fontWeight: 700,
-                            height: '70px',
-                            minWidth: '220px',
+                            height: '56px',
                             '& .MuiSelect-select': {
-                                pt: 3,
+                                pt: 2.5,
                                 pb: 1,
                                 fontSize: '1.1rem'
                             }
@@ -208,10 +207,9 @@ const Materials = () => {
                             borderRadius: '16px',
                             background: '#f1f5f9',
                             fontWeight: 700,
-                            height: '70px',
-                            minWidth: '220px',
+                            height: '56px',
                             '& .MuiSelect-select': {
-                                pt: 3,
+                                pt: 2.5,
                                 pb: 1,
                                 fontSize: '1.1rem'
                             }

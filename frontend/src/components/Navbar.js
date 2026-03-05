@@ -209,7 +209,7 @@ const Navbar = () => {
                                 transition: 'all 0.3s ease',
                             }}
                         >
-                            {isMobile ? 'CPP' : 'Campus Placement Portal'}
+                            {isMobile ? 'SC' : 'Student Companion'}
                         </Typography>
                     </Box>
                 </motion.div>
@@ -258,7 +258,7 @@ const Navbar = () => {
                                             }}>
                                                 <WorkIcon sx={{ fontSize: 18 }} />
                                             </Avatar>
-                                            <Typography sx={{ fontWeight: 900, fontSize: '1.1rem', letterSpacing: '-0.01em' }}>CPP</Typography>
+                                            <Typography sx={{ fontWeight: 900, fontSize: '1.1rem', letterSpacing: '-0.01em' }}>Student Companion</Typography>
                                         </Box>
                                         <IconButton onClick={() => setDrawerOpen(false)} sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: '#fff' } }}>
                                             <CloseIcon sx={{ fontSize: 20 }} />

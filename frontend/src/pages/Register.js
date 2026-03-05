@@ -205,11 +205,15 @@ const Register = () => {
                 <TextField fullWidth label="Full Name" name="name" onChange={handleChange} variant="outlined" />
                 
                 <Grid container spacing={2}>
-                  <Grid item xs={7}>
+                  <Grid item xs={12} sm={7}>
                     <TextField fullWidth label={role === 'student' ? "Roll Number" : "Faculty ID"} name="identifier" onChange={handleChange} />
                   </Grid>
-                  <Grid item xs={5}>
-                    <TextField select fullWidth label="Dept" name="department" onChange={handleChange}>
+                  <Grid item xs={12} sm={5}>
+                    <TextField
+                      select fullWidth label="Department" name="department"
+                      value={formData.department} onChange={handleChange}
+                      SelectProps={{ sx: { minHeight: '56px' } }}
+                    >
                       {DEPARTMENTS.map(d => <MenuItem key={d} value={d}>{d}</MenuItem>)}
                     </TextField>
                   </Grid>
