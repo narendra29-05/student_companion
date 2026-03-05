@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import {
     Container, Typography, Box, TextField, Button, Grid, Card, CardContent,
-    CircularProgress, Alert, Chip, IconButton, LinearProgress, Paper, Avatar
+    CircularProgress, Alert, Chip, IconButton, LinearProgress, Paper, Avatar,
+    Dialog, DialogTitle, DialogContent, DialogActions, InputAdornment
 } from '@mui/material';
 import {
     Save, Upload, Delete, Description, CheckCircle, Cancel,
-    Person, School, Email, Badge, CameraAlt
+    Person, School, Email, Badge, CameraAlt, Warning, Visibility, VisibilityOff
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -20,12 +22,17 @@ const resolveUrl = (path) => {
 };
 
 const StudentProfile = () => {
-    const { updateUser } = useAuth();
+    const navigate = useNavigate();
+    const { updateUser, logout } = useAuth();
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [uploadingPic, setUploadingPic] = useState(false);
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [deletePassword, setDeletePassword] = useState('');
+    const [showDeletePwd, setShowDeletePwd] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -142,6 +149,24 @@ const StudentProfile = () => {
         const fields = [profile.firstName, profile.lastName, profile.cgpa !== null ? 'yes' : null, profile.resumePath];
         const filled = fields.filter(Boolean).length;
         return Math.round((filled / fields.length) * 100);
+    };
+
+    const handleDeleteAccount = async () => {
+        if (!deletePassword) {
+            toast.error('Please enter your password');
+            return;
+        }
+        setDeleting(true);
+        try {
+            await API.delete('/student/account', { data: { password: deletePassword } });
+            toast.success('Account deleted successfully');
+            logout();
+            navigate('/');
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to delete account');
+        } finally {
+            setDeleting(false);
+        }
     };
 
     if (loading) {
@@ -378,6 +403,68 @@ const StudentProfile = () => {
                         </Box>
                     </CardContent>
                 </Card>
+                {/* Delete Account Section */}
+                <Card sx={{ borderRadius: '16px', border: '1px solid #fecaca', boxShadow: 'none', mt: 3 }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                            <Warning sx={{ color: '#ef4444', fontSize: 20 }} />
+                            <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#dc2626' }}>
+                                Danger Zone
+                            </Typography>
+                        </Box>
+                        <Typography variant="body2" sx={{ color: '#64748b', mb: 2 }}>
+                            Permanently delete your account and all associated data. This action cannot be undone.
+                        </Typography>
+                        <Button
+                            variant="outlined" color="error"
+                            onClick={() => setDeleteOpen(true)}
+                            sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 700 }}
+                        >
+                            Delete Account
+                        </Button>
+                    </CardContent>
+                </Card>
+
+                {/* Delete Account Confirmation Dialog */}
+                <Dialog open={deleteOpen} onClose={() => !deleting && setDeleteOpen(false)} maxWidth="xs" fullWidth>
+                    <DialogTitle sx={{ fontWeight: 800, color: '#dc2626', display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Warning /> Delete Account
+                    </DialogTitle>
+                    <DialogContent>
+                        <Typography variant="body2" sx={{ color: '#64748b', mb: 2 }}>
+                            This will permanently delete your account, profile, resume, assignments, submissions, drive applications, and all other data. Enter your password to confirm.
+                        </Typography>
+                        <TextField
+                            fullWidth
+                            label="Confirm Password"
+                            type={showDeletePwd ? 'text' : 'password'}
+                            value={deletePassword}
+                            onChange={(e) => setDeletePassword(e.target.value)}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton onClick={() => setShowDeletePwd(!showDeletePwd)} size="small" edge="end">
+                                            {showDeletePwd ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                    </DialogContent>
+                    <DialogActions sx={{ px: 3, pb: 2 }}>
+                        <Button onClick={() => { setDeleteOpen(false); setDeletePassword(''); }} disabled={deleting}
+                            sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 600 }}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="contained" color="error" onClick={handleDeleteAccount} disabled={deleting || !deletePassword}
+                            sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700 }}
+                        >
+                            {deleting ? 'Deleting...' : 'Delete My Account'}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </Container>
         </Box>
     );

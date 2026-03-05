@@ -7,6 +7,7 @@ const {
     deleteResume,
     uploadProfilePic,
     deleteProfilePic,
+    deleteAccount,
 } = require('../controllers/studentController');
 const { protectStudent } = require('../middleware/authMiddleware');
 const { uploadResume: resumeUpload, uploadProfilePic: picUpload } = require('../middleware/upload');
@@ -17,5 +18,6 @@ router.post('/profile/resume', protectStudent, resumeUpload.single('resume'), up
 router.delete('/profile/resume', protectStudent, deleteResume);
 router.post('/profile/picture', protectStudent, picUpload.single('profilePic'), uploadProfilePic);
 router.delete('/profile/picture', protectStudent, deleteProfilePic);
+router.delete('/account', protectStudent, deleteAccount);
 
 module.exports = router;

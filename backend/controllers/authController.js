@@ -2,6 +2,13 @@ const jwt = require('jsonwebtoken');
 const Student = require('../models/Student');
 const Faculty = require('../models/Faculty');
 const { sendWelcomeEmail, sendFacultyWelcomeEmail } = require('../utils/emailService');
+const { sequelize } = require('../config/db');
+const { Drive, DriveEligibleDepartment } = require('../models/Drive');
+const DriveApplication = require('../models/DriveApplication');
+const { Assignment, AssignmentStudent } = require('../models/Assignment');
+const Submission = require('../models/Submission');
+const { Material, MaterialUnit } = require('../models/Material');
+const Notification = require('../models/Notification');
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -216,6 +223,66 @@ exports.loginFaculty = async (req, res, next) => {
                 role: 'faculty',
             },
         });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Delete faculty account
+// @route   DELETE /api/auth/faculty/account
+exports.deleteFacultyAccount = async (req, res, next) => {
+    try {
+        const { password } = req.body;
+
+        if (!password) {
+            return res.status(400).json({ success: false, message: 'Password is required to delete account' });
+        }
+
+        const faculty = await Faculty.scope('withPassword').findByPk(req.faculty.id);
+
+        if (!faculty || !(await faculty.matchPassword(password))) {
+            return res.status(401).json({ success: false, message: 'Invalid password' });
+        }
+
+        const t = await sequelize.transaction();
+        try {
+            // Get faculty's drives and assignments for cascading deletes
+            const driveIds = (await Drive.findAll({ where: { postedBy: faculty.id }, attributes: ['id'], transaction: t })).map(d => d.id);
+            const assignmentIds = (await Assignment.findAll({ where: { facultyId: faculty.id }, attributes: ['id'], transaction: t })).map(a => a.id);
+
+            // Delete drive-related data
+            if (driveIds.length > 0) {
+                await DriveApplication.destroy({ where: { driveId: driveIds }, transaction: t });
+                await DriveEligibleDepartment.destroy({ where: { driveId: driveIds }, transaction: t });
+                await Drive.destroy({ where: { id: driveIds }, transaction: t });
+            }
+
+            // Delete assignment-related data
+            if (assignmentIds.length > 0) {
+                await Submission.destroy({ where: { assignmentId: assignmentIds }, transaction: t });
+                await AssignmentStudent.destroy({ where: { assignmentId: assignmentIds }, transaction: t });
+                await Assignment.destroy({ where: { id: assignmentIds }, transaction: t });
+            }
+
+            // Delete materials and their units
+            const materialIds = (await Material.findAll({ where: { uploadedBy: faculty.id }, attributes: ['id'], transaction: t })).map(m => m.id);
+            if (materialIds.length > 0) {
+                await MaterialUnit.destroy({ where: { materialId: materialIds }, transaction: t });
+                await Material.destroy({ where: { id: materialIds }, transaction: t });
+            }
+
+            // Delete notifications
+            await Notification.destroy({ where: { userId: faculty.id, userType: 'faculty' }, transaction: t });
+
+            // Delete faculty record
+            await faculty.destroy({ transaction: t });
+            await t.commit();
+        } catch (err) {
+            await t.rollback();
+            throw err;
+        }
+
+        res.status(200).json({ success: true, message: 'Account deleted successfully' });
     } catch (error) {
         next(error);
     }

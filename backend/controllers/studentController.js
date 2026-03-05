@@ -1,5 +1,11 @@
 const cloudinary = require('../config/cloudinary');
 const Student = require('../models/Student');
+const { sequelize } = require('../config/db');
+const DriveApplication = require('../models/DriveApplication');
+const { AssignmentStudent } = require('../models/Assignment');
+const Submission = require('../models/Submission');
+const Todo = require('../models/Todo');
+const Notification = require('../models/Notification');
 
 // Extract Cloudinary public_id from a full URL
 const getPublicId = (url) => {
@@ -164,6 +170,58 @@ exports.deleteProfilePic = async (req, res, next) => {
 
         await student.update({ profilePicPath: null });
         res.status(200).json({ success: true, message: 'Profile picture deleted!' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Delete student account
+// @route   DELETE /api/student/account
+exports.deleteAccount = async (req, res, next) => {
+    try {
+        const { password } = req.body;
+
+        if (!password) {
+            return res.status(400).json({ success: false, message: 'Password is required to delete account' });
+        }
+
+        const student = await Student.scope('withPassword').findByPk(req.student.id);
+
+        if (!student || !(await student.matchPassword(password))) {
+            return res.status(401).json({ success: false, message: 'Invalid password' });
+        }
+
+        const t = await sequelize.transaction();
+        try {
+            // Delete related data
+            await DriveApplication.destroy({ where: { studentId: student.id }, transaction: t });
+            await AssignmentStudent.destroy({ where: { studentId: student.id }, transaction: t });
+            await Submission.destroy({ where: { studentId: student.id }, transaction: t });
+            await Todo.destroy({ where: { studentId: student.id }, transaction: t });
+            await Notification.destroy({ where: { userId: student.id, userType: 'student' }, transaction: t });
+
+            // Delete Cloudinary files
+            if (student.resumePath) {
+                const publicId = getPublicId(student.resumePath);
+                if (publicId) {
+                    await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' }).catch(() => {});
+                }
+            }
+            if (student.profilePicPath) {
+                const publicId = getPublicId(student.profilePicPath);
+                if (publicId) {
+                    await cloudinary.uploader.destroy(publicId, { resource_type: 'image' }).catch(() => {});
+                }
+            }
+
+            await student.destroy({ transaction: t });
+            await t.commit();
+        } catch (err) {
+            await t.rollback();
+            throw err;
+        }
+
+        res.status(200).json({ success: true, message: 'Account deleted successfully' });
     } catch (error) {
         next(error);
     }

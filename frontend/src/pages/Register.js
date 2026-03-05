@@ -69,14 +69,16 @@ const Register = () => {
             minHeight: '100dvh',
             display: 'flex',
             flexDirection: 'column',
+            alignItems: { md: 'center' },
+            justifyContent: { md: 'center' },
             background: 'linear-gradient(180deg, #4f46e5 0%, #6366f1 40%, #818cf8 100%)',
         }}>
             {/* Top branding */}
             <Box sx={{
                 flex: '0 0 auto',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                pt: { xs: 3, sm: 4, md: 6 },
-                pb: { xs: 2, sm: 3, md: 4 },
+                pt: { xs: 3, sm: 4, md: 4 },
+                pb: { xs: 2, sm: 3, md: 2 },
                 px: 2,
             }}>
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }}>
@@ -101,14 +103,19 @@ const Register = () => {
 
             {/* Form card */}
             <Box sx={{
-                flex: 1,
+                flex: { xs: 1, md: 'none' },
                 background: '#fff',
-                borderRadius: { xs: '28px 28px 0 0', md: '32px 32px 0 0' },
-                px: { xs: 2.5, sm: 3, md: 0 },
+                borderRadius: { xs: '28px 28px 0 0', md: '28px' },
+                px: { xs: 2.5, sm: 3, md: 4 },
                 pt: { xs: 2.5, sm: 3, md: 4 },
                 pb: { xs: 2, md: 4 },
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
                 overflowY: 'auto',
+                width: { md: '100%' },
+                maxWidth: { md: 480 },
+                mx: { md: 'auto' },
+                boxShadow: { md: '0 25px 50px -12px rgba(0,0,0,0.15)' },
+                mb: { md: 4 },
             }}>
                 <Box sx={{ width: '100%', maxWidth: 440 }}>
                     {/* Role toggle */}
