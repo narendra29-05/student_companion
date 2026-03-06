@@ -112,7 +112,7 @@ const Register = () => {
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
                 overflowY: 'auto',
                 width: { md: '100%' },
-                maxWidth: { md: 480 },
+                maxWidth: { md: 500 },
                 mx: { md: 'auto' },
                 boxShadow: { md: '0 25px 50px -12px rgba(0,0,0,0.15)' },
                 mb: { md: 4 },
@@ -144,48 +144,48 @@ const Register = () => {
                     {error && <Alert severity="error" sx={{ mb: 1.5, borderRadius: '12px' }}>{error}</Alert>}
 
                     <form onSubmit={handleSubmit}>
-                        <Stack spacing={1.5}>
-                            <TextField fullWidth placeholder="Full Name" name="name" onChange={handleChange} size="small" sx={inputSx} />
+                        <Stack spacing={2}>
+                            <TextField fullWidth placeholder="Full Name" name="name" onChange={handleChange} sx={inputSx} />
 
                             <Grid container spacing={1.5}>
-                                <Grid item xs={7}>
-                                    <TextField fullWidth placeholder={role === 'student' ? "Roll Number" : "Faculty ID"} name="identifier" onChange={handleChange} size="small" sx={inputSx} />
+                                <Grid item xs={12} sm={7}>
+                                    <TextField fullWidth placeholder={role === 'student' ? "Roll Number" : "Faculty ID"} name="identifier" onChange={handleChange} sx={inputSx} />
                                 </Grid>
-                                <Grid item xs={5}>
+                                <Grid item xs={12} sm={5}>
                                     <TextField
-                                        select fullWidth name="department" label="Dept"
-                                        value={formData.department} onChange={handleChange} size="small" sx={inputSx}
+                                        select fullWidth name="department" label="Department"
+                                        value={formData.department} onChange={handleChange} sx={inputSx}
                                     >
                                         {DEPARTMENTS.map(d => <MenuItem key={d} value={d}>{d}</MenuItem>)}
                                     </TextField>
                                 </Grid>
                             </Grid>
 
-                            <TextField fullWidth placeholder="College Email" name="collegeEmail" type="email" onChange={handleChange} size="small" sx={inputSx} />
+                            <TextField fullWidth placeholder="College Email" name="collegeEmail" type="email" onChange={handleChange} sx={inputSx} />
 
                             {role === 'student' && (
-                                <TextField select fullWidth label="Year" name="year" value={formData.year} onChange={handleChange} size="small" sx={inputSx}>
+                                <TextField select fullWidth label="Year" name="year" value={formData.year} onChange={handleChange} sx={inputSx}>
                                     {[1,2,3,4].map(y => <MenuItem key={y} value={y}>Year {y}</MenuItem>)}
                                 </TextField>
                             )}
 
                             <Grid container spacing={1.5}>
-                                <Grid item xs={6}>
+                                <Grid item xs={12} sm={6}>
                                     <TextField
-                                        fullWidth placeholder="Password" name="password" size="small"
+                                        fullWidth placeholder="Password" name="password"
                                         type={showPwd ? 'text' : 'password'} onChange={handleChange} sx={inputSx}
                                         InputProps={{ endAdornment: (
                                             <InputAdornment position="end">
                                                 <IconButton onClick={() => setShowPwd(!showPwd)} size="small" edge="end">
-                                                    {showPwd ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
+                                                    {showPwd ? <VisibilityOff sx={{ fontSize: 20 }} /> : <Visibility sx={{ fontSize: 20 }} />}
                                                 </IconButton>
                                             </InputAdornment>
                                         )}}
                                     />
                                 </Grid>
-                                <Grid item xs={6}>
+                                <Grid item xs={12} sm={6}>
                                     <TextField
-                                        fullWidth placeholder="Confirm" name="confirmPassword" size="small"
+                                        fullWidth placeholder="Confirm Password" name="confirmPassword"
                                         type={showPwd ? 'text' : 'password'} onChange={handleChange}
                                         sx={{
                                             ...inputSx,
