@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     Container, Typography, Grid, Card, CardContent,
     Button, Chip, Box, CircularProgress, Alert, Select, MenuItem,
     FormControl, InputLabel, Collapse, IconButton, Avatar,
-    Paper, Tooltip
+    Paper, Tooltip, TextField, InputAdornment, ToggleButton, ToggleButtonGroup
 } from '@mui/material';
 import {
     Business, AccessTime, ExpandMore as ExpandMoreIcon,
-    CheckCircle, Cancel
+    CheckCircle, Cancel, Search, FilterList,
+    TrendingUp, WorkOutline, BookmarkBorder, Timer
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -20,7 +21,7 @@ const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
         opacity: 1,
-        transition: { staggerChildren: 0.1 }
+        transition: { staggerChildren: 0.08 }
     }
 };
 
@@ -39,6 +40,8 @@ const StudentDashboard = () => {
     const [error, setError] = useState('');
     const [expandedId, setExpandedId] = useState(null);
     const [applyDialog, setApplyDialog] = useState({ open: false, drive: null, profile: null });
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filterStatus, setFilterStatus] = useState('all');
     const { user } = useAuth();
     const navigate = useNavigate();
 
@@ -54,6 +57,52 @@ const StudentDashboard = () => {
             setLoading(false);
         }
     };
+
+    // Computed stats
+    const stats = useMemo(() => {
+        const eligible = drives.filter(d => d.isEligible).length;
+        const applied = drives.filter(d => d.applicationStatus === 'applied').length;
+        const expiringSoon = drives.filter(d => {
+            const days = Math.ceil((new Date(d.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
+            return days <= 3 && days > 0;
+        }).length;
+        return { total: drives.length, eligible, applied, expiringSoon };
+    }, [drives]);
+
+    // Filtered drives
+    const filteredDrives = useMemo(() => {
+        let result = drives;
+
+        // Search
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase();
+            result = result.filter(d =>
+                d.companyName.toLowerCase().includes(q) ||
+                d.role.toLowerCase().includes(q) ||
+                (d.package && d.package.toLowerCase().includes(q))
+            );
+        }
+
+        // Filter
+        switch (filterStatus) {
+            case 'eligible':
+                result = result.filter(d => d.isEligible);
+                break;
+            case 'applied':
+                result = result.filter(d => d.applicationStatus === 'applied');
+                break;
+            case 'interested':
+                result = result.filter(d => d.applicationStatus === 'interested');
+                break;
+            case 'notApplied':
+                result = result.filter(d => d.isEligible && !d.applicationStatus);
+                break;
+            default:
+                break;
+        }
+
+        return result;
+    }, [drives, searchQuery, filterStatus]);
 
     const handleExpandClick = (id) => setExpandedId(expandedId === id ? null : id);
 
@@ -85,7 +134,6 @@ const StudentDashboard = () => {
                 drive,
                 profile: response.data.studentProfile,
             });
-            // Update local state with application status
             setDrives(prevDrives =>
                 prevDrives.map(d => d.id === drive.id ? { ...d, applicationStatus: d.applicationStatus || 'interested' } : d)
             );
@@ -95,7 +143,6 @@ const StudentDashboard = () => {
     };
 
     const handleApplied = () => {
-        // Update status to applied after user opens form
         if (applyDialog.drive) {
             handleStatusChange(applyDialog.drive.id, 'applied');
         }
@@ -110,14 +157,21 @@ const StudentDashboard = () => {
         </Box>
     );
 
+    const statCards = [
+        { label: 'Active Drives', value: stats.total, icon: <WorkOutline />, color: '#6366f1', bg: '#eef2ff' },
+        { label: 'Eligible', value: stats.eligible, icon: <CheckCircle />, color: '#10b981', bg: '#ecfdf5' },
+        { label: 'Applied', value: stats.applied, icon: <TrendingUp />, color: '#f59e0b', bg: '#fffbeb' },
+        { label: 'Expiring Soon', value: stats.expiringSoon, icon: <Timer />, color: '#ef4444', bg: '#fef2f2' },
+    ];
+
     return (
-        <Box sx={{ background: '#f8fafc', minHeight: '100vh', py: { xs: 3, sm: 4, md: 6 } }}>
+        <Box sx={{ background: '#f8fafc', minHeight: '100vh', py: { xs: 2, sm: 3, md: 5 } }}>
             <Container maxWidth="lg">
                 {/* Profile Completion Banner */}
                 {user?.profileCompleted === false && (
                     <Alert
                         severity="warning"
-                        sx={{ mb: 4, borderRadius: '12px', fontWeight: 600 }}
+                        sx={{ mb: 3, borderRadius: '14px', fontWeight: 600 }}
                         action={
                             <Button color="inherit" size="small" onClick={() => navigate('/student/profile')} sx={{ fontWeight: 700 }}>
                                 Complete Profile
@@ -128,51 +182,161 @@ const StudentDashboard = () => {
                     </Alert>
                 )}
 
-                {/* Header Section */}
-                <Box sx={{ mb: { xs: 3, md: 6 }, display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'flex-end' }, flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
-                    <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
-                        <Typography variant="h3" sx={{ fontWeight: 900, color: '#1e293b', mb: 1, fontSize: { xs: '1.75rem', sm: '2.25rem', md: '3rem' } }}>
+                {/* Header */}
+                <motion.div initial={{ y: -15, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+                    <Box sx={{ mb: { xs: 2.5, md: 4 } }}>
+                        <Typography variant="h3" sx={{
+                            fontWeight: 900, color: '#1e293b', mb: 0.5,
+                            fontSize: { xs: '1.6rem', sm: '2rem', md: '2.5rem' },
+                            letterSpacing: '-0.03em',
+                        }}>
                             Explore <span style={{ color: '#6366f1' }}>Drives</span>
                         </Typography>
-                        <Typography variant="body1" sx={{ color: '#64748b', fontWeight: 500 }}>
+                        <Typography variant="body1" sx={{ color: '#64748b', fontWeight: 500, fontSize: { xs: '0.85rem', md: '1rem' } }}>
                             Welcome back, {user?.name}. Ready for your next big step?
                         </Typography>
-                    </motion.div>
-
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                        <Paper elevation={0} sx={{ p: 2, borderRadius: '16px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
-                            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Active</Typography>
-                            <Typography variant="h6" sx={{ color: '#6366f1', fontWeight: 800 }}>{drives.length}</Typography>
-                        </Paper>
-                        <Paper elevation={0} sx={{ p: 2, borderRadius: '16px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
-                            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Eligible</Typography>
-                            <Typography variant="h6" sx={{ color: '#10b981', fontWeight: 800 }}>{drives.filter(d => d.isEligible).length}</Typography>
-                        </Paper>
                     </Box>
-                </Box>
+                </motion.div>
 
-                {error && <Alert severity="error" sx={{ mb: 4, borderRadius: '12px' }}>{error}</Alert>}
+                {/* Stats Cards */}
+                <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: { xs: 2.5, md: 4 } }}>
+                    {statCards.map((stat, i) => (
+                        <Grid item xs={6} sm={3} key={i}>
+                            <motion.div
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.1 + i * 0.05 }}
+                            >
+                                <Paper elevation={0} sx={{
+                                    p: { xs: 2, md: 2.5 }, borderRadius: '16px',
+                                    border: '1px solid #e2e8f0', display: 'flex',
+                                    alignItems: 'center', gap: { xs: 1.5, md: 2 },
+                                }}>
+                                    <Avatar sx={{
+                                        bgcolor: stat.bg, color: stat.color,
+                                        width: { xs: 40, md: 48 }, height: { xs: 40, md: 48 },
+                                        borderRadius: '12px',
+                                    }}>
+                                        {stat.icon}
+                                    </Avatar>
+                                    <Box>
+                                        <Typography sx={{
+                                            fontWeight: 800, fontSize: { xs: '1.25rem', md: '1.5rem' },
+                                            color: '#1e293b', lineHeight: 1,
+                                        }}>
+                                            {stat.value}
+                                        </Typography>
+                                        <Typography sx={{
+                                            color: '#94a3b8', fontWeight: 600,
+                                            fontSize: { xs: '0.65rem', md: '0.75rem' },
+                                            textTransform: 'uppercase', letterSpacing: '0.03em',
+                                        }}>
+                                            {stat.label}
+                                        </Typography>
+                                    </Box>
+                                </Paper>
+                            </motion.div>
+                        </Grid>
+                    ))}
+                </Grid>
+
+                {/* Search & Filters */}
+                <motion.div initial={{ y: 15, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>
+                    <Paper elevation={0} sx={{
+                        p: { xs: 1.5, md: 2 }, borderRadius: '16px',
+                        border: '1px solid #e2e8f0', mb: { xs: 2.5, md: 4 },
+                        display: 'flex', flexDirection: { xs: 'column', sm: 'row' },
+                        gap: { xs: 1.5, sm: 2 }, alignItems: { sm: 'center' },
+                    }}>
+                        <TextField
+                            placeholder="Search by company, role, or package..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            size="small"
+                            sx={{
+                                flex: 1,
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: '12px', background: '#f8fafc',
+                                    '& fieldset': { borderColor: '#e2e8f0' },
+                                    '&.Mui-focused fieldset': { borderColor: '#6366f1' },
+                                }
+                            }}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <Search sx={{ color: '#94a3b8', fontSize: 20 }} />
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <FilterList sx={{ color: '#94a3b8', fontSize: 20, display: { xs: 'none', sm: 'block' } }} />
+                            <ToggleButtonGroup
+                                value={filterStatus} exclusive size="small"
+                                onChange={(e, val) => val !== null && setFilterStatus(val)}
+                                sx={{
+                                    '& .MuiToggleButton-root': {
+                                        border: '1px solid #e2e8f0', borderRadius: '10px !important',
+                                        textTransform: 'none', fontWeight: 700, fontSize: '0.75rem',
+                                        px: { xs: 1.2, sm: 1.5 }, color: '#64748b',
+                                        '&.Mui-selected': {
+                                            background: '#eef2ff', color: '#4f46e5',
+                                            borderColor: '#c7d2fe',
+                                        }
+                                    }
+                                }}
+                            >
+                                <ToggleButton value="all">All</ToggleButton>
+                                <ToggleButton value="eligible">Eligible</ToggleButton>
+                                <ToggleButton value="applied">Applied</ToggleButton>
+                                <ToggleButton value="notApplied">New</ToggleButton>
+                            </ToggleButtonGroup>
+                        </Box>
+                    </Paper>
+                </motion.div>
+
+                {error && <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }}>{error}</Alert>}
+
+                {/* Results count */}
+                {searchQuery || filterStatus !== 'all' ? (
+                    <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+                            {filteredDrives.length} drive{filteredDrives.length !== 1 ? 's' : ''} found
+                        </Typography>
+                        {(searchQuery || filterStatus !== 'all') && (
+                            <Chip
+                                label="Clear filters"
+                                size="small"
+                                onClick={() => { setSearchQuery(''); setFilterStatus('all'); }}
+                                sx={{ fontWeight: 600, fontSize: '0.7rem', cursor: 'pointer' }}
+                            />
+                        )}
+                    </Box>
+                ) : null}
 
                 {/* Drives Grid */}
                 <motion.div variants={containerVariants} initial="hidden" animate="visible">
-                    <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+                    <Grid container spacing={{ xs: 2, sm: 2.5, md: 3 }}>
                         <AnimatePresence>
-                            {drives.map((drive) => {
+                            {filteredDrives.map((drive) => {
                                 const daysRemaining = getDaysRemaining(drive.expiryDate);
                                 const appStatus = drive.applicationStatus;
                                 const isApplied = appStatus === 'applied';
 
                                 return (
-                                    <Grid item xs={12} md={6} lg={4} key={drive.id}>
-                                        <motion.div variants={cardVariants} whileHover={{ y: -10 }}>
+                                    <Grid item xs={12} sm={6} lg={4} key={drive.id}>
+                                        <motion.div variants={cardVariants} whileHover={{ y: -6 }}>
                                             <Card sx={{
-                                                borderRadius: '24px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                                                borderRadius: '20px', border: '1px solid #e2e8f0',
+                                                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
                                                 position: 'relative', overflow: 'hidden', background: '#fff',
                                                 opacity: drive.isEligible ? 1 : 0.85,
+                                                transition: 'box-shadow 0.3s',
+                                                '&:hover': { boxShadow: '0 8px 25px rgba(0,0,0,0.08)' },
                                             }}>
                                                 {/* Top Status Bar */}
                                                 <Box sx={{
-                                                    height: '6px',
+                                                    height: '5px',
                                                     background: !drive.isEligible
                                                         ? 'linear-gradient(90deg, #ef4444, #f87171)'
                                                         : isApplied
@@ -180,22 +344,24 @@ const StudentDashboard = () => {
                                                             : 'linear-gradient(90deg, #f59e0b, #fbbf24)'
                                                 }} />
 
-                                                <CardContent sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
-                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
-                                                        <Avatar sx={{ bgcolor: '#f1f5f9', color: '#6366f1', width: 56, height: 56, borderRadius: '16px' }}>
-                                                            <Business fontSize="large" />
+                                                <CardContent sx={{ p: { xs: 2.5, md: 3 } }}>
+                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2.5 }}>
+                                                        <Avatar sx={{
+                                                            bgcolor: '#f1f5f9', color: '#6366f1',
+                                                            width: 48, height: 48, borderRadius: '14px',
+                                                        }}>
+                                                            <Business />
                                                         </Avatar>
                                                         <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                                                            {/* Eligibility Chip */}
                                                             {drive.isEligible ? (
                                                                 <Chip
                                                                     icon={<CheckCircle sx={{ fontSize: 14 }} />}
                                                                     label="Eligible"
                                                                     size="small"
                                                                     sx={{
-                                                                        fontWeight: 800, px: 0.5,
+                                                                        fontWeight: 700, px: 0.5, height: 26,
                                                                         bgcolor: '#ecfdf5', color: '#059669',
-                                                                        border: '1px solid #10b981',
+                                                                        border: '1px solid #a7f3d0',
                                                                     }}
                                                                 />
                                                             ) : (
@@ -205,67 +371,67 @@ const StudentDashboard = () => {
                                                                         label="Not Eligible"
                                                                         size="small"
                                                                         sx={{
-                                                                            fontWeight: 800, px: 0.5,
+                                                                            fontWeight: 700, px: 0.5, height: 26,
                                                                             bgcolor: '#fef2f2', color: '#dc2626',
-                                                                            border: '1px solid #ef4444',
+                                                                            border: '1px solid #fecaca',
                                                                         }}
                                                                     />
                                                                 </Tooltip>
                                                             )}
-                                                            {/* Application Status Chip */}
                                                             {appStatus && (
                                                                 <Chip
-                                                                    label={appStatus === 'applied' ? 'Applied' : 'Interested'}
+                                                                    label={isApplied ? 'Applied' : 'Interested'}
                                                                     size="small"
                                                                     sx={{
-                                                                        fontWeight: 800, px: 0.5,
+                                                                        fontWeight: 700, px: 0.5, height: 26,
                                                                         bgcolor: isApplied ? '#ecfdf5' : '#fff7ed',
                                                                         color: isApplied ? '#059669' : '#d97706',
-                                                                        border: `1px solid ${isApplied ? '#10b981' : '#f59e0b'}`,
+                                                                        border: `1px solid ${isApplied ? '#a7f3d0' : '#fed7aa'}`,
                                                                     }}
                                                                 />
                                                             )}
                                                         </Box>
                                                     </Box>
 
-                                                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#1e293b', mb: 1 }}>{drive.companyName}</Typography>
-                                                    <Typography variant="subtitle2" sx={{ color: '#6366f1', fontWeight: 700, mb: 3 }}>{drive.role}</Typography>
+                                                    <Typography sx={{ fontWeight: 800, color: '#1e293b', mb: 0.5, fontSize: '1.15rem' }}>
+                                                        {drive.companyName}
+                                                    </Typography>
+                                                    <Typography sx={{ color: '#6366f1', fontWeight: 700, mb: 2.5, fontSize: '0.85rem' }}>
+                                                        {drive.role}
+                                                    </Typography>
 
-                                                    {/* Bento Info Badges */}
-                                                    <Grid container spacing={1} sx={{ mb: 3 }}>
-                                                        <Grid item xs={6} sm={4}>
-                                                            <Box sx={{ p: 1.5, borderRadius: '12px', bgcolor: '#f8fafc', border: '1px solid #f1f5f9' }}>
-                                                                <Typography variant="caption" sx={{ display: 'block', color: '#94a3b8', fontWeight: 600 }}>Package</Typography>
-                                                                <Typography variant="body2" sx={{ fontWeight: 700 }}>{drive.package || 'TBD'}</Typography>
-                                                            </Box>
-                                                        </Grid>
-                                                        <Grid item xs={6} sm={4}>
-                                                            <Box sx={{ p: 1.5, borderRadius: '12px', bgcolor: '#f8fafc', border: '1px solid #f1f5f9' }}>
-                                                                <Typography variant="caption" sx={{ display: 'block', color: '#94a3b8', fontWeight: 600 }}>Min CGPA</Typography>
-                                                                <Typography variant="body2" sx={{ fontWeight: 700 }}>{drive.minCGPA || '0.0'}</Typography>
-                                                            </Box>
-                                                        </Grid>
-                                                        <Grid item xs={6} sm={4}>
-                                                            <Box sx={{ p: 1.5, borderRadius: '12px', bgcolor: '#f8fafc', border: '1px solid #f1f5f9' }}>
-                                                                <Typography variant="caption" sx={{ display: 'block', color: '#94a3b8', fontWeight: 600 }}>Max Backlogs</Typography>
-                                                                <Typography variant="body2" sx={{ fontWeight: 700 }}>{drive.maxBacklogs || 0}</Typography>
-                                                            </Box>
-                                                        </Grid>
-                                                    </Grid>
+                                                    {/* Info Badges */}
+                                                    <Box sx={{ display: 'flex', gap: 1, mb: 2.5, flexWrap: 'wrap' }}>
+                                                        <Box sx={{ flex: 1, minWidth: 80, p: 1.5, borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #f1f5f9' }}>
+                                                            <Typography sx={{ fontSize: '0.6rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Package</Typography>
+                                                            <Typography sx={{ fontWeight: 800, fontSize: '0.8rem', color: '#1e293b' }}>{drive.package || 'TBD'}</Typography>
+                                                        </Box>
+                                                        <Box sx={{ flex: 1, minWidth: 80, p: 1.5, borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #f1f5f9' }}>
+                                                            <Typography sx={{ fontSize: '0.6rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Min CGPA</Typography>
+                                                            <Typography sx={{ fontWeight: 800, fontSize: '0.8rem', color: '#1e293b' }}>{drive.minCGPA || '0.0'}</Typography>
+                                                        </Box>
+                                                        <Box sx={{ flex: 1, minWidth: 80, p: 1.5, borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #f1f5f9' }}>
+                                                            <Typography sx={{ fontSize: '0.6rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Backlogs</Typography>
+                                                            <Typography sx={{ fontWeight: 800, fontSize: '0.8rem', color: '#1e293b' }}>{drive.maxBacklogs || 0}</Typography>
+                                                        </Box>
+                                                    </Box>
 
                                                     {/* Eligible Branches */}
-                                                    <Box sx={{ mb: 3 }}>
-                                                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 1 }}>ELIGIBLE BRANCHES</Typography>
+                                                    <Box sx={{ mb: 2.5 }}>
+                                                        <Typography sx={{ fontSize: '0.6rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', mb: 0.8, letterSpacing: '0.05em' }}>
+                                                            Eligible Branches
+                                                        </Typography>
                                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                                             {drive.eligibleDepartments?.map((dept, idx) => (
-                                                                <Chip key={idx} label={dept.department || dept} size="small" sx={{ borderRadius: '6px', fontSize: '10px', fontWeight: 700 }} />
+                                                                <Chip key={idx} label={dept.department || dept} size="small"
+                                                                    sx={{ borderRadius: '6px', fontSize: '0.65rem', fontWeight: 700, height: 22 }} />
                                                             ))}
                                                         </Box>
                                                     </Box>
 
                                                     {/* Self-Track Status */}
                                                     {drive.isEligible && (
-                                                        <FormControl fullWidth size="small" sx={{ mb: 3 }}>
+                                                        <FormControl fullWidth size="small" sx={{ mb: 2.5 }}>
                                                             <InputLabel>Self-Track Status</InputLabel>
                                                             <Select
                                                                 value={appStatus || 'none'}
@@ -275,7 +441,7 @@ const StudentDashboard = () => {
                                                                     if (val === 'none') return;
                                                                     handleStatusChange(drive.id, val);
                                                                 }}
-                                                                sx={{ borderRadius: '12px' }}
+                                                                sx={{ borderRadius: '10px', fontSize: '0.85rem' }}
                                                             >
                                                                 <MenuItem value="none" disabled>Select Status</MenuItem>
                                                                 <MenuItem value="interested">Mark as Interested</MenuItem>
@@ -284,48 +450,67 @@ const StudentDashboard = () => {
                                                         </FormControl>
                                                     )}
 
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 2, borderTop: '1px solid #f1f5f9' }}>
+                                                    <Box sx={{
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                        pt: 2, borderTop: '1px solid #f1f5f9',
+                                                    }}>
                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                            <AccessTime sx={{ fontSize: 16, color: daysRemaining <= 3 ? '#ef4444' : '#64748b' }} />
-                                                            <Typography variant="caption" sx={{ fontWeight: 700, color: daysRemaining <= 3 ? '#ef4444' : '#64748b' }}>
-                                                                {daysRemaining} Days Left
+                                                            <AccessTime sx={{ fontSize: 15, color: daysRemaining <= 3 ? '#ef4444' : '#64748b' }} />
+                                                            <Typography variant="caption" sx={{
+                                                                fontWeight: 700, fontSize: '0.75rem',
+                                                                color: daysRemaining <= 3 ? '#ef4444' : '#64748b',
+                                                            }}>
+                                                                {daysRemaining > 0 ? `${daysRemaining}d left` : 'Expired'}
                                                             </Typography>
                                                         </Box>
-                                                        <IconButton size="small" onClick={() => handleExpandClick(drive.id)}>
-                                                            <Typography variant="caption" sx={{ fontWeight: 700, mr: 0.5 }}>Details</Typography>
-                                                            <ExpandMoreIcon sx={{ transform: expandedId === drive.id ? 'rotate(180deg)' : 'rotate(0deg)', transition: '0.3s' }} />
-                                                        </IconButton>
+                                                        <Button
+                                                            size="small"
+                                                            onClick={() => handleExpandClick(drive.id)}
+                                                            endIcon={<ExpandMoreIcon sx={{
+                                                                transform: expandedId === drive.id ? 'rotate(180deg)' : 'rotate(0deg)',
+                                                                transition: '0.3s', fontSize: '16px !important',
+                                                            }} />}
+                                                            sx={{
+                                                                fontWeight: 700, fontSize: '0.75rem',
+                                                                textTransform: 'none', color: '#64748b',
+                                                                minWidth: 'auto', px: 1,
+                                                            }}
+                                                        >
+                                                            Details
+                                                        </Button>
                                                     </Box>
 
                                                     <Collapse in={expandedId === drive.id} timeout="auto" unmountOnExit>
-                                                        <Typography variant="body2" sx={{ mt: 2, color: '#475569', lineHeight: 1.6, background: '#f8fafc', p: 2, borderRadius: '12px' }}>
+                                                        <Typography variant="body2" sx={{
+                                                            mt: 2, color: '#475569', lineHeight: 1.6,
+                                                            background: '#f8fafc', p: 2, borderRadius: '10px',
+                                                            fontSize: '0.8rem',
+                                                        }}>
                                                             {drive.description || "No specific details shared."}
                                                         </Typography>
                                                     </Collapse>
                                                 </CardContent>
 
-                                                <Box sx={{ p: { xs: 2.5, sm: 3, md: 4 }, pt: 0 }}>
+                                                <Box sx={{ px: { xs: 2.5, md: 3 }, pb: { xs: 2.5, md: 3 }, pt: 0 }}>
                                                     <Button
                                                         variant="contained"
                                                         fullWidth
                                                         onClick={() => handleApplyClick(drive)}
                                                         disabled={!drive.isEligible || (!user?.profileCompleted && !appStatus)}
                                                         sx={{
-                                                            py: 1.5, borderRadius: '14px', fontWeight: 800, textTransform: 'none', fontSize: '1rem',
+                                                            py: 1.3, borderRadius: '12px', fontWeight: 800,
+                                                            textTransform: 'none', fontSize: '0.9rem',
                                                             background: !drive.isEligible
                                                                 ? '#f1f5f9'
                                                                 : isApplied
                                                                     ? '#f1f5f9'
                                                                     : 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
                                                             color: !drive.isEligible ? '#94a3b8' : isApplied ? '#64748b' : '#fff',
-                                                            boxShadow: !drive.isEligible || isApplied ? 'none' : '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
+                                                            boxShadow: !drive.isEligible || isApplied ? 'none' : '0 6px 12px rgba(99, 102, 241, 0.25)',
                                                             '&:hover': {
                                                                 background: !drive.isEligible ? '#f1f5f9' : isApplied ? '#e2e8f0' : '#4338ca',
                                                             },
-                                                            '&.Mui-disabled': {
-                                                                background: '#f1f5f9',
-                                                                color: '#94a3b8',
-                                                            },
+                                                            '&.Mui-disabled': { background: '#f1f5f9', color: '#94a3b8' },
                                                         }}
                                                     >
                                                         {!drive.isEligible ? 'Not Eligible' : isApplied ? 'View Details & Apply Again' : 'Apply Now'}
@@ -339,6 +524,26 @@ const StudentDashboard = () => {
                         </AnimatePresence>
                     </Grid>
                 </motion.div>
+
+                {/* Empty state */}
+                {!loading && filteredDrives.length === 0 && (
+                    <Box sx={{ textAlign: 'center', py: 8 }}>
+                        <Avatar sx={{
+                            width: 80, height: 80, mx: 'auto', mb: 3,
+                            bgcolor: '#f1f5f9', color: '#94a3b8',
+                        }}>
+                            <BookmarkBorder sx={{ fontSize: 36 }} />
+                        </Avatar>
+                        <Typography sx={{ fontWeight: 700, color: '#475569', mb: 1, fontSize: '1.1rem' }}>
+                            {searchQuery || filterStatus !== 'all' ? 'No matching drives' : 'No active drives'}
+                        </Typography>
+                        <Typography sx={{ color: '#94a3b8', fontSize: '0.85rem' }}>
+                            {searchQuery || filterStatus !== 'all'
+                                ? 'Try adjusting your search or filters'
+                                : 'Check back soon for new placement opportunities'}
+                        </Typography>
+                    </Box>
+                )}
 
                 {/* Apply Dialog */}
                 <ApplyDialog
