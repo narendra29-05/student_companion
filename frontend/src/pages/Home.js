@@ -200,12 +200,12 @@ const Home = () => {
 
     const Heading = ({ chip, chipColor, title, highlight, sub }) => (
         <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <Box sx={{ textAlign: 'center', mb: { xs: 6, md: 8 } }}>
-                <Chip label={chip} size="small" sx={{ mb: 2.5, fontWeight: 800, letterSpacing: 2, fontSize: '0.7rem', bgcolor: `${chipColor}18`, color: chipColor, border: `1px solid ${chipColor}30` }} />
-                <Typography sx={{ fontWeight: 900, color: t.tx, mb: sub ? 2 : 0, fontSize: { xs: '1.5rem', sm: '2rem', md: '3.2rem' }, letterSpacing: '-0.03em', lineHeight: 1.2 }}>
+            <Box sx={{ textAlign: 'center', mb: { xs: 4, sm: 6, md: 8 } }}>
+                <Chip label={chip} size="small" sx={{ mb: 2, fontWeight: 800, letterSpacing: 1.5, fontSize: { xs: '0.6rem', sm: '0.7rem' }, bgcolor: `${chipColor}18`, color: chipColor, border: `1px solid ${chipColor}30` }} />
+                <Typography sx={{ fontWeight: 900, color: t.tx, mb: sub ? 1.5 : 0, fontSize: { xs: '1.4rem', sm: '2rem', md: '3.2rem' }, letterSpacing: '-0.03em', lineHeight: 1.2 }}>
                     {title}{' '}<Box component="span" sx={{ color: chipColor }}>{highlight}</Box>
                 </Typography>
-                {sub && <Typography sx={{ color: t.tx2, fontWeight: 400, maxWidth: 560, mx: 'auto', fontSize: { xs: '0.95rem', md: '1.15rem' }, mt: 1 }}>{sub}</Typography>}
+                {sub && <Typography sx={{ color: t.tx2, fontWeight: 400, maxWidth: 560, mx: 'auto', fontSize: { xs: '0.82rem', sm: '0.95rem', md: '1.15rem' }, mt: 1, px: { xs: 1, md: 0 } }}>{sub}</Typography>}
             </Box>
         </motion.div>
     );
@@ -217,7 +217,7 @@ const Home = () => {
             <Box sx={{
                 position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                px: { xs: 1.5, md: 4 }, py: { xs: 1, md: 1.5 },
+                px: { xs: 1.5, md: 4 }, py: { xs: 0.8, md: 1.5 },
                 background: isDarkMode ? 'rgba(2,6,23,0.85)' : 'rgba(255,255,255,0.9)',
                 backdropFilter: 'blur(20px)',
                 borderBottom: `1px solid ${t.border}`,
@@ -259,56 +259,61 @@ const Home = () => {
             </Box>
 
             {/* ═══════ HERO ═══════ */}
-            <Box sx={{ minHeight: '100dvh', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', pt: { xs: 7, md: 8 } }}>
+            <Box sx={{ minHeight: { xs: 'auto', md: '100dvh' }, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', pt: { xs: 9, md: 8 }, pb: { xs: 6, md: 0 } }}>
                 <motion.div animate={{ scale: [1, 1.3, 1], opacity: isDarkMode ? 0.15 : 0.08 }} transition={{ duration: 15, repeat: Infinity }}
                     style={{ position: 'absolute', top: '10%', left: '0%', width: 700, height: 700, background: 'radial-gradient(circle, #6366f1 0%, transparent 75%)', filter: 'blur(100px)', zIndex: 0 }} />
 
                 <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-                    <Grid container spacing={{ xs: 3, md: 6 }} alignItems="center">
+                    <Grid container spacing={{ xs: 4, md: 6 }} alignItems="center">
                         <Grid item xs={12} md={6}>
                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                                <Box sx={{ display: 'inline-flex', alignItems: 'center', px: 2, py: 1, mb: { xs: 1.5, md: 3 }, borderRadius: '12px', background: 'rgba(99,102,241,0.1)', border: `1px solid ${isDarkMode ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.2)'}` }}>
-                                    <BoltIcon sx={{ color: '#818cf8', fontSize: 18, mr: 1 }} />
-                                    <Typography variant="caption" sx={{ color: isDarkMode ? '#fff' : '#6366f1', fontWeight: 800, letterSpacing: 2 }}>V 2.0 - AI-DRIVEN PLATFORM</Typography>
+                                <Box sx={{ display: 'inline-flex', alignItems: 'center', px: 1.5, py: 0.8, mb: { xs: 2, md: 3 }, borderRadius: '10px', background: 'rgba(99,102,241,0.1)', border: `1px solid ${isDarkMode ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.2)'}` }}>
+                                    <BoltIcon sx={{ color: '#818cf8', fontSize: 16, mr: 0.8 }} />
+                                    <Typography variant="caption" sx={{ color: isDarkMode ? '#fff' : '#6366f1', fontWeight: 800, letterSpacing: 1.5, fontSize: { xs: '0.6rem', sm: '0.7rem' } }}>V 2.0 - AI-DRIVEN PLATFORM</Typography>
                                 </Box>
                             </motion.div>
-                            <Typography variant="h1" sx={{ fontWeight: 900, color: t.tx, fontSize: { xs: '2.2rem', sm: '3rem', md: '5.2rem' }, lineHeight: 1, mb: 2, letterSpacing: '-0.04em' }}>
+                            <Typography variant="h1" sx={{ fontWeight: 900, color: t.tx, fontSize: { xs: '2.4rem', sm: '3rem', md: '5.2rem' }, lineHeight: 1.05, mb: 2, letterSpacing: '-0.04em' }}>
                                 Student <br />
                                 <Box component="span" sx={{ display: 'inline-block', background: isDarkMode ? 'linear-gradient(90deg,#fff 30%,#94a3b8 100%)' : 'linear-gradient(90deg,#0f172a 30%,#64748b 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', color: 'transparent' }}>Companion.</Box>
                             </Typography>
-                            <Box sx={{ height: { xs: 40, sm: 50 }, mb: 4, display: 'flex', alignItems: 'center' }}>
-                                <Typography variant="h4" sx={{ color: t.tx2, fontWeight: 500, mr: 2, fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2.125rem' } }}>Master your</Typography>
+                            <Box sx={{ height: { xs: 36, sm: 50 }, mb: { xs: 3, md: 4 }, display: 'flex', alignItems: 'center' }}>
+                                <Typography sx={{ color: t.tx2, fontWeight: 500, mr: 1.5, fontSize: { xs: '1.1rem', sm: '1.5rem', md: '2.125rem' } }}>Master your</Typography>
                                 <AnimatePresence mode="wait">
                                     <motion.div key={cycleIndex} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} transition={{ duration: 0.4 }}>
-                                        <Typography variant="h4" sx={{ fontWeight: 800, color: cycleIndex % 2 === 0 ? '#6366f1' : '#ec4899', fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2.125rem' } }}>{cycleWords[cycleIndex]}</Typography>
+                                        <Typography sx={{ fontWeight: 800, color: cycleIndex % 2 === 0 ? '#6366f1' : '#ec4899', fontSize: { xs: '1.1rem', sm: '1.5rem', md: '2.125rem' } }}>{cycleWords[cycleIndex]}</Typography>
                                     </motion.div>
                                 </AnimatePresence>
                             </Box>
-                            <Grid container spacing={2} sx={{ mb: { xs: 3, md: 6 } }}>
+
+                            {/* Feature mini-cards - full width on mobile */}
+                            <Grid container spacing={1.5} sx={{ mb: { xs: 3, md: 6 } }}>
                                 <Grid item xs={6}>
-                                    <Paper sx={{ p: 2, background: t.card, border: `1px solid ${t.border}`, borderRadius: '16px', backdropFilter: 'blur(10px)' }}>
-                                        <InsightsIcon sx={{ color: '#6366f1', mb: 1 }} />
-                                        <Typography variant="subtitle2" sx={{ color: t.tx, fontWeight: 700 }}>Smart Sync</Typography>
-                                        <Typography variant="caption" sx={{ color: t.tx2 }}>Automatic drive updates.</Typography>
+                                    <Paper sx={{ p: { xs: 1.5, sm: 2 }, background: t.card, border: `1px solid ${t.border}`, borderRadius: { xs: '12px', md: '16px' }, backdropFilter: 'blur(10px)' }}>
+                                        <InsightsIcon sx={{ color: '#6366f1', fontSize: { xs: 20, sm: 24 }, mb: 0.5 }} />
+                                        <Typography sx={{ color: t.tx, fontWeight: 700, fontSize: { xs: '0.78rem', sm: '0.875rem' } }}>Smart Sync</Typography>
+                                        <Typography sx={{ color: t.tx2, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>Automatic drive updates.</Typography>
                                     </Paper>
                                 </Grid>
                                 <Grid item xs={6}>
-                                    <Paper sx={{ p: 2, background: t.card, border: `1px solid ${t.border}`, borderRadius: '16px', backdropFilter: 'blur(10px)' }}>
-                                        <VerifiedUserIcon sx={{ color: '#10b981', mb: 1 }} />
-                                        <Typography variant="subtitle2" sx={{ color: t.tx, fontWeight: 700 }}>Safe Access</Typography>
-                                        <Typography variant="caption" sx={{ color: t.tx2 }}>Cloud-secured materials.</Typography>
+                                    <Paper sx={{ p: { xs: 1.5, sm: 2 }, background: t.card, border: `1px solid ${t.border}`, borderRadius: { xs: '12px', md: '16px' }, backdropFilter: 'blur(10px)' }}>
+                                        <VerifiedUserIcon sx={{ color: '#10b981', fontSize: { xs: 20, sm: 24 }, mb: 0.5 }} />
+                                        <Typography sx={{ color: t.tx, fontWeight: 700, fontSize: { xs: '0.78rem', sm: '0.875rem' } }}>Safe Access</Typography>
+                                        <Typography sx={{ color: t.tx2, fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>Cloud-secured materials.</Typography>
                                     </Paper>
                                 </Grid>
                             </Grid>
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                                <Button variant="contained" onClick={() => navigate('/register')} sx={{ borderRadius: '14px', px: { xs: 3, sm: 5 }, py: { xs: 1.5, sm: 2 }, fontSize: '1rem', fontWeight: 800, background: t.btnBg, color: t.btnTx, textTransform: 'none', '&:hover': { background: isDarkMode ? '#f1f5f9' : '#1e293b' } }}>Get Started</Button>
-                                <Button variant="outlined" onClick={() => navigate('/login')} sx={{ borderRadius: '14px', px: { xs: 3, sm: 5 }, py: { xs: 1.5, sm: 2 }, color: t.tx, borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)', fontWeight: 700, textTransform: 'none' }}>Sign In</Button>
+
+                            <Stack direction="row" spacing={1.5}>
+                                <Button variant="contained" onClick={() => navigate('/register')} sx={{ borderRadius: '12px', px: { xs: 3, sm: 5 }, py: { xs: 1.3, sm: 2 }, fontSize: { xs: '0.88rem', sm: '1rem' }, fontWeight: 800, background: t.btnBg, color: t.btnTx, textTransform: 'none', '&:hover': { background: isDarkMode ? '#f1f5f9' : '#1e293b' } }}>Get Started</Button>
+                                <Button variant="outlined" onClick={() => navigate('/login')} sx={{ borderRadius: '12px', px: { xs: 3, sm: 5 }, py: { xs: 1.3, sm: 2 }, fontSize: { xs: '0.88rem', sm: '1rem' }, color: t.tx, borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)', fontWeight: 700, textTransform: 'none' }}>Sign In</Button>
                             </Stack>
                         </Grid>
-                        <Grid item xs={12} md={6}>
-                            <Box sx={{ position: 'relative', height: { xs: 280, sm: 400, md: 550 }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+
+                        {/* Right side mockup - hidden on small mobile, shown from sm up */}
+                        <Grid item xs={12} md={6} sx={{ display: { xs: 'none', sm: 'block' } }}>
+                            <Box sx={{ position: 'relative', height: { sm: 380, md: 550 }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <motion.div animate={{ y: [0, -20, 0] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}>
-                                    <Paper sx={{ width: { xs: '90vw', sm: 360, md: 420 }, maxWidth: 420, height: { xs: 200, sm: 240, md: 260 }, borderRadius: { xs: '28px', md: '48px' }, background: t.glass, backdropFilter: 'blur(25px)', border: `1px solid ${t.border}`, p: { xs: 2.5, sm: 3.5, md: 5 }, boxShadow: isDarkMode ? '0 50px 100px rgba(0,0,0,0.7)' : '0 30px 60px rgba(0,0,0,0.1)' }}>
+                                    <Paper sx={{ width: { sm: 340, md: 420 }, maxWidth: 420, height: { sm: 220, md: 260 }, borderRadius: { sm: '32px', md: '48px' }, background: t.glass, backdropFilter: 'blur(25px)', border: `1px solid ${t.border}`, p: { sm: 3.5, md: 5 }, boxShadow: isDarkMode ? '0 50px 100px rgba(0,0,0,0.7)' : '0 30px 60px rgba(0,0,0,0.1)' }}>
                                         <AnimatePresence mode="wait">
                                             <motion.div key={activeFeature} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.6 }}>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
@@ -324,7 +329,7 @@ const Home = () => {
                                         </AnimatePresence>
                                     </Paper>
                                 </motion.div>
-                                <Box sx={{ display: { xs: 'none', sm: 'block' }, position: 'absolute', top: '5%', right: '0%' }}><motion.div animate={{ y: [-15, 15, -15] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}>
+                                <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', top: '5%', right: '0%' }}><motion.div animate={{ y: [-15, 15, -15] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}>
                                     <Paper sx={{ p: 2.5, borderRadius: '24px', background: 'linear-gradient(135deg,#6366f1 0%,#4f46e5 100%)', color: '#fff', textAlign: 'center', boxShadow: '0 20px 40px rgba(99,102,241,0.4)' }}>
                                         <TrendingUpIcon />
                                         <Typography variant="h5" sx={{ fontWeight: 900 }}>92%</Typography>
@@ -335,7 +340,7 @@ const Home = () => {
                         </Grid>
                     </Grid>
                 </Container>
-                <Box sx={{ position: 'absolute', bottom: 30, left: '50%', transform: 'translateX(-50%)', zIndex: 2 }}>
+                <Box sx={{ display: { xs: 'none', md: 'block' }, position: 'absolute', bottom: 30, left: '50%', transform: 'translateX(-50%)', zIndex: 2 }}>
                     <motion.div animate={{ y: [0, 12, 0] }} transition={{ duration: 2, repeat: Infinity }}>
                         <KeyboardArrowDownIcon sx={{ fontSize: 36, color: t.tx2, opacity: 0.5 }} />
                     </motion.div>
@@ -343,18 +348,18 @@ const Home = () => {
             </Box>
 
             {/* ═══════ SERVICES — Zigzag layout ═══════ */}
-            <Box sx={{ py: { xs: 5, sm: 8, md: 16 } }}>
+            <Box sx={{ py: { xs: 6, sm: 8, md: 16 } }}>
                 <Container maxWidth="lg">
                     <Heading chip="SERVICES" chipColor="#6366f1" title="Everything You Need," highlight="One Platform." sub="From placement drives to study materials — your complete academic companion." />
-                    <Stack spacing={5}>
+                    <Stack spacing={{ xs: 2.5, sm: 3, md: 5 }}>
                         {features.map((f, i) => {
                             const isEven = i % 2 === 0;
                             return (
                                 <motion.div key={i} initial={{ opacity: 0, x: isEven ? -60 : 60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.6, type: 'spring', stiffness: 80 }}>
                                     <Paper sx={{
-                                        p: { xs: 3.5, md: 5 }, borderRadius: '28px',
-                                        display: 'flex', gap: { xs: 3, md: 5 }, alignItems: 'center',
-                                        flexDirection: { xs: 'column', md: isEven ? 'row' : 'row-reverse' },
+                                        p: { xs: 2.5, sm: 3.5, md: 5 }, borderRadius: { xs: '18px', md: '28px' },
+                                        display: 'flex', gap: { xs: 2, sm: 3, md: 5 }, alignItems: 'center',
+                                        flexDirection: { xs: 'row', md: isEven ? 'row' : 'row-reverse' },
                                         background: t.card, backdropFilter: 'blur(10px)',
                                         border: `1px solid ${t.border}`,
                                         transition: 'all 0.3s',
@@ -362,19 +367,19 @@ const Home = () => {
                                     }}>
                                         <Box sx={{
                                             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                                            width: { xs: 80, md: 110 }, height: { xs: 80, md: 110 },
-                                            borderRadius: '28px',
+                                            width: { xs: 52, sm: 80, md: 110 }, height: { xs: 52, sm: 80, md: 110 },
+                                            borderRadius: { xs: '14px', md: '28px' },
                                             background: `linear-gradient(135deg, ${f.color}18, ${f.color}08)`,
                                             border: `2px solid ${f.color}25`,
                                         }}>
-                                            {React.cloneElement(f.icon, { sx: { color: f.color, fontSize: { xs: 36, md: 48 } } })}
+                                            {React.cloneElement(f.icon, { sx: { color: f.color, fontSize: { xs: 24, sm: 36, md: 48 } } })}
                                         </Box>
-                                        <Box sx={{ flex: 1, minWidth: 0, textAlign: { xs: 'center', md: isEven ? 'left' : 'right' } }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5, flexWrap: 'wrap', justifyContent: { xs: 'center', md: isEven ? 'flex-start' : 'flex-end' } }}>
-                                                <Typography variant="h5" sx={{ fontWeight: 800, color: t.tx, fontSize: { xs: '1.15rem', md: '1.4rem' } }}>{f.title}</Typography>
-                                                <Chip label={f.tag} size="small" sx={{ bgcolor: `${f.color}15`, color: f.color, fontWeight: 800, fontSize: '0.7rem', height: 24 }} />
+                                        <Box sx={{ flex: 1, minWidth: 0, textAlign: { xs: 'left', md: isEven ? 'left' : 'right' } }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: { xs: 0.5, md: 1.5 }, flexWrap: 'wrap', justifyContent: { xs: 'flex-start', md: isEven ? 'flex-start' : 'flex-end' } }}>
+                                                <Typography sx={{ fontWeight: 800, color: t.tx, fontSize: { xs: '0.95rem', sm: '1.15rem', md: '1.4rem' } }}>{f.title}</Typography>
+                                                <Chip label={f.tag} size="small" sx={{ bgcolor: `${f.color}15`, color: f.color, fontWeight: 800, fontSize: '0.65rem', height: 22 }} />
                                             </Box>
-                                            <Typography variant="body1" sx={{ color: t.tx2, lineHeight: 1.8, fontSize: { xs: '0.9rem', md: '1rem' } }}>{f.desc}</Typography>
+                                            <Typography sx={{ color: t.tx2, lineHeight: 1.6, fontSize: { xs: '0.78rem', sm: '0.9rem', md: '1rem' } }}>{f.desc}</Typography>
                                         </Box>
                                     </Paper>
                                 </motion.div>
@@ -385,7 +390,7 @@ const Home = () => {
             </Box>
 
             {/* ═══════ HOW IT WORKS — 3 steps in one row ═══════ */}
-            <Box sx={{ py: { xs: 5, sm: 8, md: 14 }, background: t.alt }}>
+            <Box sx={{ py: { xs: 6, sm: 8, md: 14 }, background: t.alt }}>
                 <Container maxWidth="lg">
                     <Heading chip="HOW IT WORKS" chipColor="#10b981" title="Get Started in" highlight="3 Steps" />
                     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'center', sm: 'flex-start' }, justifyContent: 'center', gap: { xs: 5, sm: 0 } }}>
@@ -519,7 +524,7 @@ const Home = () => {
             </Box>
 
             {/* ═══════ ROLE FEATURES ═══════ */}
-            <Box sx={{ py: { xs: 5, sm: 8, md: 16 } }}>
+            <Box sx={{ py: { xs: 6, sm: 8, md: 16 } }}>
                 <Container maxWidth="lg">
                     <Heading chip="BUILT FOR EVERYONE" chipColor="#8b5cf6" title="Tailored for" highlight="Every Role" />
                     <Grid container spacing={4} alignItems="stretch" justifyContent="center">
@@ -642,15 +647,15 @@ const Home = () => {
                 <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
                     <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
                         <Box sx={{ textAlign: 'center' }}>
-                            <Typography sx={{ fontWeight: 900, color: t.tx, mb: 3, fontSize: { xs: '2rem', md: '3rem' }, letterSpacing: '-0.03em' }}>Ready to Transform Your Campus Experience?</Typography>
-                            <Typography sx={{ color: t.tx2, fontWeight: 400, mb: 5, fontSize: { xs: '1rem', md: '1.2rem' } }}>Join now and take control of your placements, academics, and goals.</Typography>
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
+                            <Typography sx={{ fontWeight: 900, color: t.tx, mb: 2, fontSize: { xs: '1.5rem', sm: '2rem', md: '3rem' }, letterSpacing: '-0.03em' }}>Ready to Transform Your Campus Experience?</Typography>
+                            <Typography sx={{ color: t.tx2, fontWeight: 400, mb: { xs: 3, md: 5 }, fontSize: { xs: '0.88rem', sm: '1rem', md: '1.2rem' }, px: { xs: 1, md: 0 } }}>Join now and take control of your placements, academics, and goals.</Typography>
+                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="center" sx={{ px: { xs: 2, md: 0 } }}>
                                 <Button variant="contained" size="large" onClick={() => navigate('/register')} endIcon={<ArrowForwardIcon />}
-                                    sx={{ borderRadius: '16px', px: 5, py: 2, fontWeight: 800, textTransform: 'none', fontSize: '1.05rem', background: 'linear-gradient(135deg,#6366f1 0%,#4f46e5 100%)', boxShadow: '0 15px 30px rgba(99,102,241,0.35)', '&:hover': { boxShadow: '0 20px 40px rgba(99,102,241,0.45)' } }}>
+                                    sx={{ borderRadius: '14px', px: { xs: 3, sm: 5 }, py: { xs: 1.4, sm: 2 }, fontWeight: 800, textTransform: 'none', fontSize: { xs: '0.92rem', sm: '1.05rem' }, background: 'linear-gradient(135deg,#6366f1 0%,#4f46e5 100%)', boxShadow: '0 15px 30px rgba(99,102,241,0.35)', '&:hover': { boxShadow: '0 20px 40px rgba(99,102,241,0.45)' } }}>
                                     Get Started Free
                                 </Button>
                                 <Button variant="outlined" size="large" onClick={() => navigate('/login')}
-                                    sx={{ borderRadius: '16px', px: 5, py: 2, fontWeight: 700, textTransform: 'none', fontSize: '1.05rem', color: t.tx, borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)' }}>
+                                    sx={{ borderRadius: '14px', px: { xs: 3, sm: 5 }, py: { xs: 1.4, sm: 2 }, fontWeight: 700, textTransform: 'none', fontSize: { xs: '0.92rem', sm: '1.05rem' }, color: t.tx, borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)' }}>
                                     Sign In
                                 </Button>
                             </Stack>
@@ -660,9 +665,9 @@ const Home = () => {
             </Box>
 
             {/* ═══════ FOOTER ═══════ */}
-            <Box sx={{ pt: { xs: 6, md: 8 }, pb: { xs: 4, md: 5 }, background: t.footBg, borderTop: `1px solid ${t.footBd}` }}>
+            <Box sx={{ pt: { xs: 5, md: 8 }, pb: { xs: 4, md: 5 }, background: t.footBg, borderTop: `1px solid ${t.footBd}` }}>
                 <Container maxWidth="lg">
-                    <Grid container spacing={{ xs: 4, md: 6 }} sx={{ mb: { xs: 5, md: 6 } }}>
+                    <Grid container spacing={{ xs: 3, md: 6 }} sx={{ mb: { xs: 4, md: 6 } }}>
                         {/* Brand */}
                         <Grid item xs={12} md={4}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>

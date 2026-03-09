@@ -297,7 +297,7 @@ const StudentProfile = () => {
                         <Grid container spacing={2}>
                             {[
                                 { icon: <Badge fontSize="small" />, label: 'Roll Number', value: profile?.rollNumber },
-                                { icon: <Email fontSize="small" />, label: 'Email', value: profile?.email },
+                                { icon: <Email fontSize="small" />, label: 'Email', value: profile?.collegeEmail || profile?.email },
                                 { icon: <School fontSize="small" />, label: 'Department', value: profile?.department },
                                 { icon: <Person fontSize="small" />, label: 'Year', value: `Year ${profile?.year}` },
                             ].map((item) => (
