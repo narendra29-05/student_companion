@@ -28,6 +28,8 @@ const FacultyAssignments = () => {
     const [selectedStudents, setSelectedStudents] = useState([]);
     const [searchResults, setSearchResults] = useState([]);
     const [searchLoading, setSearchLoading] = useState(false);
+    const [bulkPreviewCount, setBulkPreviewCount] = useState(null);
+    const [previewLoading, setPreviewLoading] = useState(false);
     const { user } = useAuth();
     const muiTheme = useTheme();
     const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
@@ -65,6 +67,34 @@ const FacultyAssignments = () => {
         }
     }, [selectedStudents]);
 
+    // Fetch preview count when bulk filters change
+    const fetchBulkPreview = useCallback(async (filters) => {
+        const { campus, department, section } = filters;
+        if (!campus && !department && !section) {
+            setBulkPreviewCount(null);
+            return;
+        }
+        setPreviewLoading(true);
+        try {
+            const params = new URLSearchParams();
+            if (campus) params.append('campus', campus);
+            if (department) params.append('department', department);
+            if (section) params.append('section', section);
+            const response = await API.get(`/assignments/bulk-preview?${params}`);
+            setBulkPreviewCount(response.data.count);
+        } catch {
+            setBulkPreviewCount(null);
+        } finally {
+            setPreviewLoading(false);
+        }
+    }, []);
+
+    const updateBulkFilter = (field, value) => {
+        const updated = { ...bulkFilters, [field]: value };
+        setBulkFilters(updated);
+        fetchBulkPreview(updated);
+    };
+
     const handleCreate = async () => {
         if (!formData.title || !formData.deadline) {
             toast.error('Title and deadline are required');
@@ -97,6 +127,7 @@ const FacultyAssignments = () => {
             setFormData({ title: '', description: '', deadline: '' });
             setSelectedStudents([]);
             setBulkFilters({ campus: '', department: '', section: '' });
+            setBulkPreviewCount(null);
             setAssignMode('individual');
             fetchAssignments();
         } catch (err) {
@@ -357,7 +388,7 @@ const FacultyAssignments = () => {
                                 <TextField
                                     select fullWidth label="Campus" size="small"
                                     value={bulkFilters.campus}
-                                    onChange={(e) => setBulkFilters({ ...bulkFilters, campus: e.target.value })}
+                                    onChange={(e) => updateBulkFilter('campus', e.target.value)}
                                 >
                                     <MenuItem value="">All Campuses</MenuItem>
                                     {CAMPUSES.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
@@ -365,30 +396,39 @@ const FacultyAssignments = () => {
                                 <TextField
                                     select fullWidth label="Department" size="small"
                                     value={bulkFilters.department}
-                                    onChange={(e) => setBulkFilters({ ...bulkFilters, department: e.target.value })}
+                                    onChange={(e) => updateBulkFilter('department', e.target.value)}
                                 >
                                     <MenuItem value="">All Departments</MenuItem>
                                     {DEPARTMENTS.map(d => <MenuItem key={d} value={d}>{d}</MenuItem>)}
                                 </TextField>
                                 <TextField
-                                    fullWidth label="Section" size="small" placeholder="e.g. A, B, C"
+                                    fullWidth label="Section" size="small" placeholder="e.g. A, B, C, D"
                                     value={bulkFilters.section}
-                                    onChange={(e) => setBulkFilters({ ...bulkFilters, section: e.target.value })}
+                                    onChange={(e) => updateBulkFilter('section', e.target.value.toUpperCase())}
                                 />
                             </Stack>
                             {(bulkFilters.campus || bulkFilters.department || bulkFilters.section) && (
-                                <Box sx={{ mt: 1.5, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                                <Box sx={{ mt: 1.5, display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center' }}>
                                     <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b', mr: 0.5 }}>Target:</Typography>
                                     {bulkFilters.campus && <Chip label={bulkFilters.campus} size="small" color="primary" sx={{ fontWeight: 600 }} />}
                                     {bulkFilters.department && <Chip label={bulkFilters.department} size="small" color="secondary" sx={{ fontWeight: 600 }} />}
                                     {bulkFilters.section && <Chip label={`Section ${bulkFilters.section}`} size="small" sx={{ fontWeight: 600, bgcolor: '#f59e0b', color: '#fff' }} />}
+                                    <Chip
+                                        label={previewLoading ? 'Counting...' : `${bulkPreviewCount ?? '?'} student(s) matched`}
+                                        size="small"
+                                        sx={{
+                                            fontWeight: 700, ml: 0.5,
+                                            bgcolor: bulkPreviewCount === 0 ? '#fef2f2' : '#ecfdf5',
+                                            color: bulkPreviewCount === 0 ? '#dc2626' : '#166534',
+                                        }}
+                                    />
                                 </Box>
                             )}
                         </Box>
                     )}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => { setOpenCreateDialog(false); setFormData({ title: '', description: '', deadline: '' }); setSelectedStudents([]); setBulkFilters({ campus: '', department: '', section: '' }); setAssignMode('individual'); }}>
+                    <Button onClick={() => { setOpenCreateDialog(false); setFormData({ title: '', description: '', deadline: '' }); setSelectedStudents([]); setBulkFilters({ campus: '', department: '', section: '' }); setBulkPreviewCount(null); setAssignMode('individual'); }}>
                         Cancel
                     </Button>
                     <Button

@@ -21,7 +21,6 @@ const Drive = sequelize.define('Drive', {
     driveLink: {
         type: DataTypes.STRING(500),
         allowNull: false,
-        unique: true,
     },
     description: {
         type: DataTypes.TEXT,

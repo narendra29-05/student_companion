@@ -32,11 +32,11 @@ exports.createAssignment = async (req, res, next) => {
         let students;
 
         if (isBulkTarget) {
-            // Find students matching the filters
+            // Find students matching the filters (case-insensitive)
             const where = {};
-            if (targetCampus) where.campus = targetCampus;
-            if (targetDepartment) where.department = targetDepartment;
-            if (targetSection) where.section = targetSection;
+            if (targetCampus) where.campus = { [Op.iLike]: targetCampus };
+            if (targetDepartment) where.department = { [Op.iLike]: targetDepartment };
+            if (targetSection) where.section = { [Op.iLike]: targetSection };
 
             students = await Student.findAll({
                 where,
@@ -215,6 +215,25 @@ exports.deleteAssignment = async (req, res, next) => {
         await assignment.destroy();
 
         res.status(200).json({ success: true, message: 'Assignment deleted successfully' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// GET /api/assignments/bulk-preview — Preview how many students match filters
+exports.bulkPreview = async (req, res, next) => {
+    try {
+        const { campus, department, section } = req.query;
+        if (!campus && !department && !section) {
+            return res.status(400).json({ success: false, message: 'At least one filter required' });
+        }
+        const where = {};
+        if (campus) where.campus = { [Op.iLike]: campus };
+        if (department) where.department = { [Op.iLike]: department };
+        if (section) where.section = { [Op.iLike]: section };
+
+        const count = await Student.count({ where });
+        res.status(200).json({ success: true, count });
     } catch (error) {
         next(error);
     }

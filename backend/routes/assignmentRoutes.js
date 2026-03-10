@@ -6,6 +6,7 @@ const {
     getAssignmentSubmissions,
     deleteAssignment,
     searchStudents,
+    bulkPreview,
     getStudentAssignments,
     submitAssignment,
     updateSubmission,
@@ -16,6 +17,7 @@ const { protectFaculty, protectStudent } = require('../middleware/authMiddleware
 router.post('/', protectFaculty, createAssignment);
 router.get('/faculty', protectFaculty, getFacultyAssignments);
 router.get('/students/search', protectFaculty, searchStudents);
+router.get('/bulk-preview', protectFaculty, bulkPreview);
 router.get('/:id/submissions', protectFaculty, getAssignmentSubmissions);
 router.delete('/:id', protectFaculty, deleteAssignment);
 
