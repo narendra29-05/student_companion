@@ -26,6 +26,7 @@ const buildProfileResponse = (student) => ({
     department: student.department,
     year: student.year,
     section: student.section,
+    campus: student.campus,
     cgpa: student.cgpa,
     backlogs: student.backlogs,
     resumePath: student.resumePath,
@@ -48,7 +49,7 @@ exports.getProfile = async (req, res, next) => {
 // @route   PUT /api/student/profile
 exports.updateProfile = async (req, res, next) => {
     try {
-        const { firstName, lastName, cgpa, backlogs, section } = req.body;
+        const { firstName, lastName, cgpa, backlogs, section, campus } = req.body;
         const student = await Student.findByPk(req.student.id);
 
         await student.update({
@@ -57,6 +58,7 @@ exports.updateProfile = async (req, res, next) => {
             cgpa: cgpa !== undefined ? cgpa : student.cgpa,
             backlogs: backlogs !== undefined ? backlogs : student.backlogs,
             section: section !== undefined ? section : student.section,
+            campus: campus !== undefined ? campus : student.campus,
         });
 
         // Auto-set profileCompleted

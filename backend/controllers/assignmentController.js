@@ -10,32 +10,63 @@ const { sendSubmissionNotification, notifyAssignmentAssigned } = require('../uti
 // POST /api/assignments — Create assignment
 exports.createAssignment = async (req, res, next) => {
     try {
-        const { title, description, deadline, rollNumbers } = req.body;
+        const { title, description, deadline, rollNumbers, targetCampus, targetDepartment, targetSection } = req.body;
 
-        if (!title || !deadline || !rollNumbers || !Array.isArray(rollNumbers) || rollNumbers.length === 0) {
+        if (!title || !deadline) {
             return res.status(400).json({
                 success: false,
-                message: 'Title, deadline, and at least one roll number are required',
+                message: 'Title and deadline are required',
             });
         }
 
-        // Normalize roll numbers to uppercase
-        const normalized = rollNumbers.map((r) => r.toUpperCase());
+        const isBulkTarget = targetCampus || targetDepartment || targetSection;
+        const hasRollNumbers = rollNumbers && Array.isArray(rollNumbers) && rollNumbers.length > 0;
 
-        // Validate all roll numbers exist
-        const students = await Student.findAll({
-            where: { rollNumber: normalized },
-            attributes: ['id', 'rollNumber'],
-        });
-
-        const foundRolls = students.map((s) => s.rollNumber);
-        const invalid = normalized.filter((r) => !foundRolls.includes(r));
-
-        if (invalid.length > 0) {
+        if (!isBulkTarget && !hasRollNumbers) {
             return res.status(400).json({
                 success: false,
-                message: `Roll numbers not found: ${invalid.join(', ')}`,
+                message: 'Either select students by roll number or by campus/department/section filters',
             });
+        }
+
+        let students;
+
+        if (isBulkTarget) {
+            // Find students matching the filters
+            const where = {};
+            if (targetCampus) where.campus = targetCampus;
+            if (targetDepartment) where.department = targetDepartment;
+            if (targetSection) where.section = targetSection;
+
+            students = await Student.findAll({
+                where,
+                attributes: ['id', 'rollNumber'],
+            });
+
+            if (students.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'No students found matching the selected campus/department/section filters',
+                });
+            }
+        } else {
+            // Existing roll number logic
+            const normalized = rollNumbers.map((r) => r.toUpperCase());
+
+            students = await Student.findAll({
+                where: { rollNumber: normalized },
+                attributes: ['id', 'rollNumber'],
+            });
+
+            const foundRolls = students.map((s) => s.rollNumber);
+            const invalid = normalized.filter((r) => !foundRolls.includes(r));
+
+            if (invalid.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Roll numbers not found: ${invalid.join(', ')}`,
+                });
+            }
         }
 
         const assignment = await Assignment.create({
@@ -43,6 +74,9 @@ exports.createAssignment = async (req, res, next) => {
             description,
             deadline,
             facultyId: req.faculty.id,
+            targetCampus: targetCampus || null,
+            targetDepartment: targetDepartment || null,
+            targetSection: targetSection || null,
         });
 
         // Bulk create junction records
@@ -63,7 +97,7 @@ exports.createAssignment = async (req, res, next) => {
 
         res.status(201).json({
             success: true,
-            message: 'Assignment created successfully!',
+            message: `Assignment created and assigned to ${students.length} student(s)!`,
             assignment: full,
         });
 

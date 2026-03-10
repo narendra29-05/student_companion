@@ -20,7 +20,7 @@ const generateToken = (id) => {
 
 exports.registerStudent = async (req, res, next) => {
     try {
-        const { rollNumber, collegeEmail, password, name, department, year, section } = req.body;
+        const { rollNumber, collegeEmail, password, name, department, year, section, campus } = req.body;
 
         if (!rollNumber || !collegeEmail || !password || !name || !department || !year) {
             return res.status(400).json({ success: false, message: 'All fields are required' });
@@ -46,7 +46,7 @@ exports.registerStudent = async (req, res, next) => {
         }
 
         const student = await Student.create({
-            rollNumber, collegeEmail, password, name, department, year, section,
+            rollNumber, collegeEmail, password, name, department, year, section, campus,
         });
 
         const token = generateToken(student.id);
@@ -65,6 +65,7 @@ exports.registerStudent = async (req, res, next) => {
                 department: student.department,
                 year: student.year,
                 section: student.section,
+                campus: student.campus,
                 cgpa: student.cgpa,
                 backlogs: student.backlogs,
                 profilePicPath: student.profilePicPath,
@@ -118,6 +119,7 @@ exports.loginStudent = async (req, res, next) => {
                 department: student.department,
                 year: student.year,
                 section: student.section,
+                campus: student.campus,
                 cgpa: student.cgpa,
                 backlogs: student.backlogs,
                 profilePicPath: student.profilePicPath,

@@ -30,6 +30,18 @@ const Assignment = sequelize.define('Assignment', {
             key: 'id',
         },
     },
+    targetCampus: {
+        type: DataTypes.STRING(10),
+        allowNull: true,
+    },
+    targetDepartment: {
+        type: DataTypes.STRING(10),
+        allowNull: true,
+    },
+    targetSection: {
+        type: DataTypes.STRING(5),
+        allowNull: true,
+    },
 }, {
     tableName: 'assignments',
     timestamps: true,

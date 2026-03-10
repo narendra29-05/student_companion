@@ -4,12 +4,16 @@ import {
     Button, TextField, Dialog, DialogTitle, DialogContent,
     DialogActions, Box, CircularProgress, Alert, Chip, IconButton,
     useTheme, useMediaQuery, Autocomplete, Table, TableBody,
-    TableCell, TableContainer, TableHead, TableRow, Paper, Divider
+    TableCell, TableContainer, TableHead, TableRow, Paper, Divider,
+    ToggleButton, ToggleButtonGroup, MenuItem, Stack
 } from '@mui/material';
-import { Add, Delete, Visibility, Assignment } from '@mui/icons-material';
+import { Add, Delete, Visibility, Assignment, People, PersonSearch } from '@mui/icons-material';
 import API from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+
+const DEPARTMENTS = ['CSE', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT', 'AIDS', 'AIML'];
+const CAMPUSES = ['ACET', 'AUS'];
 
 const FacultyAssignments = () => {
     const [assignments, setAssignments] = useState([]);
@@ -19,6 +23,8 @@ const FacultyAssignments = () => {
     const [submissionsData, setSubmissionsData] = useState(null);
     const [submissionsLoading, setSubmissionsLoading] = useState(false);
     const [formData, setFormData] = useState({ title: '', description: '', deadline: '' });
+    const [assignMode, setAssignMode] = useState('individual'); // 'individual' or 'bulk'
+    const [bulkFilters, setBulkFilters] = useState({ campus: '', department: '', section: '' });
     const [selectedStudents, setSelectedStudents] = useState([]);
     const [searchResults, setSearchResults] = useState([]);
     const [searchLoading, setSearchLoading] = useState(false);
@@ -60,20 +66,38 @@ const FacultyAssignments = () => {
     }, [selectedStudents]);
 
     const handleCreate = async () => {
-        if (!formData.title || !formData.deadline || selectedStudents.length === 0) {
-            toast.error('Title, deadline, and at least one student are required');
+        if (!formData.title || !formData.deadline) {
+            toast.error('Title and deadline are required');
+            return;
+        }
+
+        if (assignMode === 'individual' && selectedStudents.length === 0) {
+            toast.error('Please select at least one student');
+            return;
+        }
+
+        if (assignMode === 'bulk' && !bulkFilters.campus && !bulkFilters.department && !bulkFilters.section) {
+            toast.error('Please select at least one filter (campus, department, or section)');
             return;
         }
 
         try {
-            await API.post('/assignments', {
-                ...formData,
-                rollNumbers: selectedStudents.map((s) => s.rollNumber),
-            });
-            toast.success('Assignment created successfully!');
+            const payload = { ...formData };
+            if (assignMode === 'individual') {
+                payload.rollNumbers = selectedStudents.map((s) => s.rollNumber);
+            } else {
+                if (bulkFilters.campus) payload.targetCampus = bulkFilters.campus;
+                if (bulkFilters.department) payload.targetDepartment = bulkFilters.department;
+                if (bulkFilters.section) payload.targetSection = bulkFilters.section;
+            }
+
+            const response = await API.post('/assignments', payload);
+            toast.success(response.data.message || 'Assignment created successfully!');
             setOpenCreateDialog(false);
             setFormData({ title: '', description: '', deadline: '' });
             setSelectedStudents([]);
+            setBulkFilters({ campus: '', department: '', section: '' });
+            setAssignMode('individual');
             fetchAssignments();
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to create assignment');
@@ -196,6 +220,9 @@ const FacultyAssignments = () => {
                                                     fontWeight: 700,
                                                 }}
                                             />
+                                            {a.targetCampus && <Chip label={a.targetCampus} size="small" sx={{ fontWeight: 600, bgcolor: '#e0e7ff', color: '#4338ca' }} />}
+                                            {a.targetDepartment && <Chip label={a.targetDepartment} size="small" sx={{ fontWeight: 600, bgcolor: '#fce7f3', color: '#be185d' }} />}
+                                            {a.targetSection && <Chip label={`Sec ${a.targetSection}`} size="small" sx={{ fontWeight: 600, bgcolor: '#fef3c7', color: '#92400e' }} />}
                                             {expired ? (
                                                 <Chip label="Expired" size="small" color="error" />
                                             ) : (
@@ -274,40 +301,94 @@ const FacultyAssignments = () => {
                         Assign to Students
                     </Typography>
 
-                    <Autocomplete
-                        multiple
-                        options={searchResults}
-                        value={selectedStudents}
-                        getOptionLabel={(opt) => `${opt.rollNumber} — ${opt.name}`}
-                        isOptionEqualToValue={(opt, val) => opt.id === val.id}
-                        loading={searchLoading}
-                        filterOptions={(x) => x}
-                        onInputChange={(_, val) => handleStudentSearch(val)}
-                        onChange={(_, val) => setSelectedStudents(val)}
-                        renderTags={(value, getTagProps) =>
-                            value.map((opt, idx) => (
-                                <Chip
-                                    {...getTagProps({ index: idx })}
-                                    key={opt.id}
-                                    label={`${opt.rollNumber} — ${opt.name}`}
-                                    size="small"
-                                    sx={{ fontWeight: 600 }}
+                    <ToggleButtonGroup
+                        value={assignMode}
+                        exclusive
+                        onChange={(_, v) => { if (v) setAssignMode(v); }}
+                        size="small"
+                        sx={{ mb: 2 }}
+                    >
+                        <ToggleButton value="individual" sx={{ textTransform: 'none', fontWeight: 600, px: 2 }}>
+                            <PersonSearch sx={{ mr: 0.5, fontSize: 18 }} /> Individual
+                        </ToggleButton>
+                        <ToggleButton value="bulk" sx={{ textTransform: 'none', fontWeight: 600, px: 2 }}>
+                            <People sx={{ mr: 0.5, fontSize: 18 }} /> By Campus / Dept / Section
+                        </ToggleButton>
+                    </ToggleButtonGroup>
+
+                    {assignMode === 'individual' ? (
+                        <Autocomplete
+                            multiple
+                            options={searchResults}
+                            value={selectedStudents}
+                            getOptionLabel={(opt) => `${opt.rollNumber} — ${opt.name}`}
+                            isOptionEqualToValue={(opt, val) => opt.id === val.id}
+                            loading={searchLoading}
+                            filterOptions={(x) => x}
+                            onInputChange={(_, val) => handleStudentSearch(val)}
+                            onChange={(_, val) => setSelectedStudents(val)}
+                            renderTags={(value, getTagProps) =>
+                                value.map((opt, idx) => (
+                                    <Chip
+                                        {...getTagProps({ index: idx })}
+                                        key={opt.id}
+                                        label={`${opt.rollNumber} — ${opt.name}`}
+                                        size="small"
+                                        sx={{ fontWeight: 600 }}
+                                    />
+                                ))
+                            }
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    placeholder="Search by roll number..."
+                                    variant="outlined"
+                                    helperText="Type at least 2 characters to search"
                                 />
-                            ))
-                        }
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                placeholder="Search by roll number..."
-                                variant="outlined"
-                                helperText="Type at least 2 characters to search"
-                            />
-                        )}
-                        noOptionsText="No students found"
-                    />
+                            )}
+                            noOptionsText="No students found"
+                        />
+                    ) : (
+                        <Box sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: 2, border: '1px solid #e2e8f0' }}>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                Assign to all students matching the selected filters. At least one filter is required.
+                            </Typography>
+                            <Stack spacing={2}>
+                                <TextField
+                                    select fullWidth label="Campus" size="small"
+                                    value={bulkFilters.campus}
+                                    onChange={(e) => setBulkFilters({ ...bulkFilters, campus: e.target.value })}
+                                >
+                                    <MenuItem value="">All Campuses</MenuItem>
+                                    {CAMPUSES.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
+                                </TextField>
+                                <TextField
+                                    select fullWidth label="Department" size="small"
+                                    value={bulkFilters.department}
+                                    onChange={(e) => setBulkFilters({ ...bulkFilters, department: e.target.value })}
+                                >
+                                    <MenuItem value="">All Departments</MenuItem>
+                                    {DEPARTMENTS.map(d => <MenuItem key={d} value={d}>{d}</MenuItem>)}
+                                </TextField>
+                                <TextField
+                                    fullWidth label="Section" size="small" placeholder="e.g. A, B, C"
+                                    value={bulkFilters.section}
+                                    onChange={(e) => setBulkFilters({ ...bulkFilters, section: e.target.value })}
+                                />
+                            </Stack>
+                            {(bulkFilters.campus || bulkFilters.department || bulkFilters.section) && (
+                                <Box sx={{ mt: 1.5, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b', mr: 0.5 }}>Target:</Typography>
+                                    {bulkFilters.campus && <Chip label={bulkFilters.campus} size="small" color="primary" sx={{ fontWeight: 600 }} />}
+                                    {bulkFilters.department && <Chip label={bulkFilters.department} size="small" color="secondary" sx={{ fontWeight: 600 }} />}
+                                    {bulkFilters.section && <Chip label={`Section ${bulkFilters.section}`} size="small" sx={{ fontWeight: 600, bgcolor: '#f59e0b', color: '#fff' }} />}
+                                </Box>
+                            )}
+                        </Box>
+                    )}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => { setOpenCreateDialog(false); setFormData({ title: '', description: '', deadline: '' }); setSelectedStudents([]); }}>
+                    <Button onClick={() => { setOpenCreateDialog(false); setFormData({ title: '', description: '', deadline: '' }); setSelectedStudents([]); setBulkFilters({ campus: '', department: '', section: '' }); setAssignMode('individual'); }}>
                         Cancel
                     </Button>
                     <Button

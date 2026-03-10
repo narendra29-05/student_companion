@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 const bcrypt = require('bcryptjs');
-const { DEPARTMENTS } = require('../config/constants');
+const { DEPARTMENTS, CAMPUSES } = require('../config/constants');
 
 const Student = sequelize.define('Student', {
     id: {
@@ -55,6 +55,13 @@ const Student = sequelize.define('Student', {
         validate: {
             min: 1,
             max: 4,
+        },
+    },
+    campus: {
+        type: DataTypes.STRING(10),
+        allowNull: true,
+        validate: {
+            isIn: [CAMPUSES],
         },
     },
     section: {

@@ -4,10 +4,12 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import StudentLayout from './components/StudentLayout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import StudentDashboard from './pages/StudentDashboard';
+import StudentDrives from './pages/StudentDrives';
 import StudentProfile from './pages/StudentProfile';
 import FacultyDashboard from './pages/FacultyDashboard';
 import ResourcePage from './pages/ResourcePage';
@@ -19,23 +21,19 @@ import StudentAssignments from './pages/StudentAssignments';
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRole }) => {
     const { user, loading } = useAuth();
-
     if (loading) return <div>Loading...</div>;
-
     if (!user) return <Navigate to="/login" />;
-
-    if (allowedRole && user.role !== allowedRole) {
-        return <Navigate to="/" />;
-    }
-
+    if (allowedRole && user.role !== allowedRole) return <Navigate to="/" />;
     return children;
 };
 
-// Conditionally render Navbar
+// Conditionally render Navbar (only for faculty + public non-auth pages)
 const ConditionalNavbar = () => {
     const location = useLocation();
     const hideOn = ['/', '/login', '/register'];
+    // Hide navbar on all student routes (sidebar handles it)
     if (hideOn.includes(location.pathname)) return null;
+    if (location.pathname.startsWith('/student')) return null;
     return <Navbar />;
 };
 
@@ -48,60 +46,29 @@ function AppContent() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
 
-                {/* Student Routes */}
+                {/* Student Routes — wrapped in sidebar layout */}
                 <Route
-                    path="/student/profile"
+                    path="/student"
                     element={
                         <ProtectedRoute allowedRole="student">
-                            <StudentProfile />
+                            <StudentLayout />
                         </ProtectedRoute>
                     }
-                />
-                <Route
-                    path="/student/dashboard"
-                    element={
-                        <ProtectedRoute allowedRole="student">
-                            <StudentDashboard />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/student/attendance"
-                    element={
-                        <ProtectedRoute allowedRole="student">
-                            <ResourcePage
-                                title="Attendance Portal"
-                                description="Check your semester-wise attendance and percentage."
-                                link="https://attendance.sandyy.in/"
-                            />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/student/materials"
-                    element={
-                        <ProtectedRoute allowedRole="student">
-                            <Materials />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/student/todos"
-                    element={
-                        <ProtectedRoute allowedRole="student">
-                            <TodoTracker />
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/student/assignments"
-                    element={
-                        <ProtectedRoute allowedRole="student">
-                            <StudentAssignments />
-                        </ProtectedRoute>
-                    }
-                />
+                >
+                    <Route path="dashboard" element={<StudentDashboard />} />
+                    <Route path="drives" element={<StudentDrives />} />
+                    <Route path="profile" element={<StudentProfile />} />
+                    <Route path="assignments" element={<StudentAssignments />} />
+                    <Route path="todos" element={<TodoTracker />} />
+                    <Route path="materials" element={<Materials />} />
+                    <Route path="attendance" element={
+                        <ResourcePage
+                            title="Attendance Portal"
+                            description="Check your semester-wise attendance and percentage."
+                            link="https://attendance.sandyy.in/"
+                        />
+                    } />
+                </Route>
 
                 {/* Faculty Routes */}
                 <Route

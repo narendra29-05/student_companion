@@ -27,6 +27,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import GroupsIcon from '@mui/icons-material/Groups';
 
 const DEPARTMENTS = ['CSE', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT', 'AIDS', 'AIML'];
+const CAMPUSES = ['ACET', 'AUS'];
 
 /* Floating animated icon (desktop left panel) */
 const FloatingIcon = ({ icon, size, top, left, right, bottom, delay, duration, color, rotate }) => (
@@ -85,7 +86,7 @@ const Register = () => {
     const [showPwd, setShowPwd] = useState(false);
     const [step, setStep] = useState(0);
     const [formData, setFormData] = useState({
-        name: '', identifier: '', collegeEmail: '', department: '', year: 1, password: '', confirmPassword: ''
+        name: '', identifier: '', collegeEmail: '', department: '', campus: '', year: 1, password: '', confirmPassword: ''
     });
 
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -114,7 +115,7 @@ const Register = () => {
         setLoading(true);
         try {
             const userData = role === 'student'
-                ? { rollNumber: formData.identifier.toUpperCase(), collegeEmail: formData.collegeEmail, password: formData.password, name: formData.name, department: formData.department, year: Number(formData.year) }
+                ? { rollNumber: formData.identifier.toUpperCase(), collegeEmail: formData.collegeEmail, password: formData.password, name: formData.name, department: formData.department, year: Number(formData.year), campus: formData.campus || undefined }
                 : { facultyId: formData.identifier.toUpperCase(), collegeEmail: formData.collegeEmail, password: formData.password, name: formData.name, department: formData.department };
             await register(userData, role);
             toast.success('Registration successful!');
@@ -493,6 +494,18 @@ const Register = () => {
                                                 </Grid>
                                             )}
                                         </Grid>
+                                        {role === 'student' && (
+                                            <Box>
+                                                <Typography variant="body2" sx={{ fontWeight: 700, color: '#334155', mb: 0.8, fontSize: '0.85rem' }}>Campus</Typography>
+                                                <TextField
+                                                    select fullWidth name="campus"
+                                                    value={formData.campus} onChange={handleChange} sx={inputSx}
+                                                >
+                                                    <MenuItem value="">Select Campus (optional)</MenuItem>
+                                                    {CAMPUSES.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
+                                                </TextField>
+                                            </Box>
+                                        )}
                                         <Stack direction="row" spacing={1.5}>
                                             <Button
                                                 fullWidth variant="outlined"
