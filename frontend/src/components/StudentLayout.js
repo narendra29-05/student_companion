@@ -23,7 +23,7 @@ import SchoolIcon from '@mui/icons-material/School';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 
-const API_BASE = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5001';
+const API_BASE = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5010';
 const resolveUrl = (path) => {
     if (!path) return undefined;
     return path.startsWith('http') ? path : `${API_BASE}/${path}`;

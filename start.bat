@@ -33,7 +33,7 @@ echo ==========================================
 echo   Both servers are starting!
 echo ==========================================
 echo.
-echo   Backend  -^> http://localhost:5001
+echo   Backend  -^> http://localhost:5010
 echo   Frontend -^> http://localhost:3000
 echo.
 echo   Close the server windows to stop them.

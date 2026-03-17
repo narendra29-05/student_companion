@@ -44,7 +44,7 @@ Submission.belongsTo(Assignment, { foreignKey: 'assignmentId', as: 'assignment' 
 // Sync all models with database
 const syncDB = async () => {
     try {
-        await sequelize.sync({ alter: true });
+        await sequelize.sync();
         console.log('All tables synced successfully');
     } catch (error) {
         console.error('Table sync failed:', error.message);

@@ -20,7 +20,7 @@ import { useAuth } from '../context/AuthContext';
 
 const CAMPUSES = ['ACET', 'AUS'];
 
-const API_BASE = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5001';
+const API_BASE = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5010';
 
 const resolveUrl = (path) => {
     if (!path) return undefined;

@@ -19,7 +19,7 @@ import ChecklistIcon from '@mui/icons-material/Checklist';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import NotificationBell from './NotificationBell';
 
-const API_BASE = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5001';
+const API_BASE = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5010';
 
 const resolveUrl = (path) => {
     if (!path) return undefined;
